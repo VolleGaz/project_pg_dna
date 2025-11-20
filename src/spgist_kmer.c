@@ -1,0 +1,1 @@
+/* placeholder for spgist_kmer.c */
