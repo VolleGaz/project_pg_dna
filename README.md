@@ -6,7 +6,7 @@ It is designed as part of the INFO-H417 project (ULB).
 
 ---
 
-# 🚀 Development Setup (Docker + PostgreSQL 16)
+#  Development Setup (Docker + PostgreSQL 16)
 
 This project is designed to be compiled and executed **inside a Dockerized PostgreSQL environment**.
 
@@ -20,7 +20,7 @@ docker run --name pg_dna_dev \
     -d postgres:16
 ```
 
-⚠️ **IMPORTANT:**  
+ **IMPORTANT:**  
 The path _must be absolute_. Example:
 
 ```
@@ -90,9 +90,9 @@ pg_dna extension loaded
 
 ---
 
-# 🧪 Troubleshooting
+#  Troubleshooting
 
-## 📌 Problem: `/pg_dna` appears empty inside Docker  
+##  Problem: `/pg_dna` appears empty inside Docker  
 Cause: Docker cannot access the folder.
 
 Solutions:
@@ -107,7 +107,7 @@ sudo chmod o+x /home/yourusername
 
 ---
 
-## 📌 Problem: version mismatch  
+##  Problem: version mismatch  
 ```
 Server is version 16, library is version 14
 ```
@@ -124,7 +124,7 @@ make install
 
 ---
 
-## 📌 Problem: implicit declaration of cstring_to_text  
+##  Problem: implicit declaration of cstring_to_text  
 PostgreSQL 16 removed some older macros.
 
 Use:
@@ -136,7 +136,7 @@ text *txt = cstring_to_text("...");
 
 ---
 
-# 📂 Project Structure
+#  Project Structure
 
 ```
 pg_dna/
@@ -158,7 +158,7 @@ pg_dna/
 
 ---
 
-# 👥 Team Usage (for ULB group)
+#  Team Usage (for ULB group)
 
 All team members can:
 
@@ -173,7 +173,7 @@ git clone https://github.com/<team>/pg_dna_extension.git
 
 ---
 
-# 🧠 Notes for Students
+#  Notes for Students
 
 - Always recompile inside Docker  
 - Never copy `.so` files manually  
