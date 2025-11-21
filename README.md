@@ -181,7 +181,3 @@ git clone https://github.com/<team>/pg_dna_extension.git
 - Keep the Makefile simple and portable  
 
 ---
-
-# 🧬 Authors
-Group #X — INFO-H417 — ULB  
-2025–2026
