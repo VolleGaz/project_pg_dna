@@ -23,4 +23,10 @@ CREATE TYPE dna (
     STORAGE = EXTENDED
 );
 
+-- 5. Utility: length of a DNA sequence
+CREATE FUNCTION dna_length(dna)
+RETURNS integer
+AS 'pg_dna', 'dna_length'
+LANGUAGE C IMMUTABLE STRICT;
+
 COMMENT ON TYPE dna IS 'DNA sequence type stored like text (A/C/G/T only)';
