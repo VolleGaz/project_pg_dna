@@ -1,183 +1,218 @@
-# pg_dna — PostgreSQL Extension for DNA / K-mer Analysis  
+pg_dna — PostgreSQL Extension for DNA / K-mer Analysis
+
 INFO-H417 — Database System Architecture (2025–2026)
 
-This repository contains a custom PostgreSQL extension implemented in C for DNA sequence manipulation, k-mer processing, and pattern matching (qkmer with IUPAC ambiguous codes).  
-It is designed as part of the INFO-H417 project (ULB).
+This repository contains a custom PostgreSQL extension implemented in C for DNA sequence manipulation, k-mer processing, and pattern matching.
+It is designed as part of the INFO-H417 project (ULB) and executed inside a reproducible Docker environment.
 
----
+Development Setup (Docker Compose + PostgreSQL 16)
 
-#  Development Setup (Docker + PostgreSQL 16)
+All development and compilation occur inside a Dockerized PostgreSQL 16 server to ensure identical behavior for all team members.
 
-This project is designed to be compiled and executed **inside a Dockerized PostgreSQL environment**.
+1. Start PostgreSQL and pgAdmin using Docker Compose
 
-## 1. Start PostgreSQL 16 in Docker
+From the project root:
 
-```bash
-docker run --name pg_dna_dev \
-    -e POSTGRES_PASSWORD=postgres \
-    -p 5432:5432 \
-    -v /absolute/path/to/project_pg_dna:/pg_dna \
-    -d postgres:16
-```
+docker compose up -d
 
- **IMPORTANT:**  
-The path _must be absolute_. Example:
 
-```
-/home/dabel/Documents/project_pg_dna
-```
+This launches:
 
-If the container starts but `/pg_dna` is EMPTY inside Docker, you used the wrong path or Docker cannot access the folder.
+PostgreSQL 16 on port 5440
 
----
+pgAdmin on port 8081
 
-## 2. Enter the container
+A bind-mounted project directory inside the container at /pg_dna
 
-```bash
+Verify that both containers are running:
+
+docker ps
+
+
+Expected containers:
+
+pg_dna_dev
+
+pgadmin_pg_dna
+
+2. Enter the PostgreSQL container
 docker exec -it pg_dna_dev bash
-```
 
----
 
-## 3. Install compilation tools
+Verify the project is correctly mounted:
 
-```bash
-apt update
-apt install -y build-essential postgresql-server-dev-16
-```
+ls -l /pg_dna
 
-These provide:
 
-- `gcc`
-- `make`
-- PostgreSQL headers
-- `pg_config`
+Expected:
 
----
+Makefile
+src/
+sql/
+pg_dna.control
+README.md
 
-## 4. Compile and install the extension
+
+If the directory is empty, see Troubleshooting.
+
+3. Install compilation tools (first-time only)
 
 Inside the container:
 
-```bash
+apt-get update
+apt-get install -y \
+    build-essential \
+    clang llvm-dev \
+    libpq-dev \
+    postgresql-server-dev-16
+
+
+These provide:
+
+gcc, make
+
+PostgreSQL C development headers
+
+pg_config
+
+LLVM bitcode tools
+
+4. Compile and install the extension
+
+Inside the container:
+
 cd /pg_dna
 make clean
 make
 make install
-```
 
----
 
-## 5. Load the extension in PostgreSQL
+After installation, restart PostgreSQL:
 
-```bash
+exit
+docker restart pg_dna_dev
+docker exec -it pg_dna_dev bash
 psql -U postgres
-```
 
-Then:
+5. Load and test the extension
 
-```sql
-DROP EXTENSION IF EXISTS pg_dna CASCADE;
+Inside PostgreSQL:
+
 CREATE EXTENSION pg_dna;
-SELECT hello_dna();
-```
+SELECT 'ACGTAC'::dna;
+SELECT 'acgtacgt'::dna;
+SELECT 'AXGT'::dna;
 
-You should see:
 
-```
-pg_dna extension loaded
-```
+Expected results:
 
----
+ACGTAC
 
-#  Troubleshooting
+ACGTACGT
 
-##  Problem: `/pg_dna` appears empty inside Docker  
-Cause: Docker cannot access the folder.
+Error: invalid base X
 
-Solutions:
+If these succeed, the extension is correctly installed.
 
-1. Ensure the absolute path is correct  
-2. Ensure the folder exists  
-3. Ensure Docker can traverse your home directory:
+Troubleshooting
+Problem: /pg_dna is empty inside the container
 
-```bash
-sudo chmod o+x /home/yourusername
-```
-
----
-
-##  Problem: version mismatch  
-```
-Server is version 16, library is version 14
-```
-
-Cause: `.so` was compiled on a different machine / different PostgreSQL version.
+Cause: The bind mount is not working.
 
 Fix:
 
-```bash
-make clean
-make
-make install
-```
+Ensure your docker-compose.yml includes:
 
----
+volumes:
+  - .:/pg_dna
 
-##  Problem: implicit declaration of cstring_to_text  
-PostgreSQL 16 removed some older macros.
 
-Use:
+Reset environment:
 
-```c
-#include "utils/builtins.h"
-text *txt = cstring_to_text("...");
-```
+docker compose down
+rm -rf data/
+docker compose up -d
 
----
 
-#  Project Structure
+Ensure you can run Docker without sudo:
 
-```
-pg_dna/
+sudo usermod -aG docker $USER
+newgrp docker
+
+Problem: data/ cannot be removed
+
+Cause: It was created by Docker under root.
+
+Fix:
+
+sudo rm -rf data/
+
+Problem: PostgreSQL cannot load pg_dna.so
+
+Cause: PostgreSQL must be restarted after each make install.
+
+Fix:
+
+docker restart pg_dna_dev
+
+Problem: Missing PostgreSQL headers
+
+If you see:
+
+postgres.h: No such file or directory
+
+
+Install:
+
+apt-get install postgresql-server-dev-16
+
+Project Structure
+project_pg_dna/
 │
+├── docker-compose.yml
+├── Makefile
+├── pg_dna.control
+├── sql/
+│   └── pg_dna--1.0.sql
 ├── src/
-│   ├── pg_dna.c
 │   ├── dna.c
 │   ├── kmer.c
 │   ├── qkmer.c
+│   ├── funcs.c
+│   ├── ops_kmer.c
+│   ├── hash_btree_kmer.c
+│   ├── spgist_kmer.c
 │   └── ...
-│
-├── sql/
-│   └── pg_dna--1.0.sql
-│
-├── pg_dna.control
-├── Makefile
 └── README.md
-```
 
----
+Team Usage (ULB)
 
-#  Team Usage (for ULB group)
+Each team member can:
 
-All team members can:
+Clone the repository
 
-1. Clone this repository
-2. Start the same Docker container
-3. Compile the extension inside it
-4. Modify C code from their host machine
+Start the environment with docker compose up -d
 
-```
-git clone https://github.com/<team>/pg_dna_extension.git
-```
+Enter the container and compile the extension
 
----
+Edit source files locally on their machine
 
-#  Notes for Students
+Rebuild using make clean && make && make install
 
-- Always recompile inside Docker  
-- Never copy `.so` files manually  
-- Use Git branches for major changes  
-- Keep the Makefile simple and portable  
+Restart PostgreSQL and test with psql
 
----
+This ensures consistent development and avoids dependency mismatches.
+
+Notes for Contributors
+
+Always compile inside the container
+
+Never copy .so files manually
+
+Always restart PostgreSQL after installation
+
+Keep Makefile portable
+
+Avoid committing root-owned files
+
+Use Git branches for new features
