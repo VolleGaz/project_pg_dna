@@ -1,0 +1,30 @@
+--- Input/Output ---
+ACGT | ACGT
+acgt | ACGT
+AaCcGgTt | ACGTGGT
+
+ERROR: invalid DNA base 'X'
+ERROR: invalid DNA base 'N'
+
+--- Length ---
+1
+2
+8
+10
+
+--- dna_get ---
+A
+C
+G
+C
+A
+
+ERROR: index out of range
+
+--- Large sequences ---
+40
+T
+100
+T
+
+--- DONE ---

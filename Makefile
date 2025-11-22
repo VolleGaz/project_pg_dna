@@ -7,3 +7,6 @@ DATA = sql/pg_dna--1.0.sql
 PG_CONFIG = pg_config
 PGXS := $(shell $(PG_CONFIG) --pgxs)
 include $(PGXS)
+
+test:
+	psql -v ON_ERROR_STOP=1 -U postgres -f tests/test_dna.sql
