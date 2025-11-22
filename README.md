@@ -6,6 +6,14 @@ It is designed as part of the INFO-H417 project (ULB) and executed inside a repr
 
 ---
 
+Ensure Docker runs without sudo:
+
+```bash
+sudo usermod -aG docker $USER
+newgrp docker
+```
+---
+
 # Development Setup (Docker Compose + PostgreSQL 16)
 
 All development and compilation occur inside a Dockerized PostgreSQL 16 server to ensure identical behavior for all team members.
