@@ -1,172 +1,200 @@
-pg_dna — PostgreSQL Extension for DNA / K-mer Analysis
-
+# pg_dna — PostgreSQL Extension for DNA / K-mer Analysis  
 INFO-H417 — Database System Architecture (2025–2026)
 
-This repository contains a custom PostgreSQL extension implemented in C for DNA sequence manipulation, k-mer processing, and pattern matching.
+This repository contains a custom PostgreSQL extension implemented in C for DNA sequence manipulation, k-mer processing, and pattern matching.  
 It is designed as part of the INFO-H417 project (ULB) and executed inside a reproducible Docker environment.
 
-Development Setup (Docker Compose + PostgreSQL 16)
+---
+
+# Development Setup (Docker Compose + PostgreSQL 16)
 
 All development and compilation occur inside a Dockerized PostgreSQL 16 server to ensure identical behavior for all team members.
 
-1. Start PostgreSQL and pgAdmin using Docker Compose
+---
+
+## 1. Start PostgreSQL and pgAdmin using Docker Compose
 
 From the project root:
 
+```bash
 docker compose up -d
-
+```
 
 This launches:
 
-PostgreSQL 16 on port 5440
-
-pgAdmin on port 8081
-
-A bind-mounted project directory inside the container at /pg_dna
+- PostgreSQL 16 on port 5440  
+- pgAdmin on port 8081  
+- A bind-mounted project directory inside the container at `/pg_dna`
 
 Verify that both containers are running:
 
+```bash
 docker ps
-
+```
 
 Expected containers:
 
-pg_dna_dev
+- `pg_dna_dev`
+- `pgadmin_pg_dna`
 
-pgadmin_pg_dna
+---
 
-2. Enter the PostgreSQL container
+## 2. Enter the PostgreSQL container
+
+```bash
 docker exec -it pg_dna_dev bash
+```
 
+Verify that the project is visible:
 
-Verify the project is correctly mounted:
-
+```bash
 ls -l /pg_dna
-
+```
 
 Expected:
 
+```
 Makefile
 src/
 sql/
 pg_dna.control
 README.md
+```
 
+If this directory is empty, see Troubleshooting.
 
-If the directory is empty, see Troubleshooting.
+---
 
-3. Install compilation tools (first-time only)
+## 3. Install compilation tools (first-time only)
 
 Inside the container:
 
+```bash
 apt-get update
-apt-get install -y \
-    build-essential \
-    clang llvm-dev \
-    libpq-dev \
-    postgresql-server-dev-16
-
+apt-get install -y     build-essential     clang llvm-dev     libpq-dev     postgresql-server-dev-16
+```
 
 These provide:
 
-gcc, make
+- gcc, make  
+- PostgreSQL C development headers  
+- pg_config  
+- LLVM bitcode tools  
 
-PostgreSQL C development headers
+---
 
-pg_config
-
-LLVM bitcode tools
-
-4. Compile and install the extension
+## 4. Compile and install the extension
 
 Inside the container:
 
+```bash
 cd /pg_dna
 make clean
 make
 make install
+```
 
+Restart PostgreSQL so it loads the new `.so`:
 
-After installation, restart PostgreSQL:
-
+```bash
 exit
 docker restart pg_dna_dev
 docker exec -it pg_dna_dev bash
 psql -U postgres
+```
 
-5. Load and test the extension
+---
+
+## 5. Load and test the extension
 
 Inside PostgreSQL:
 
+```sql
 CREATE EXTENSION pg_dna;
 SELECT 'ACGTAC'::dna;
 SELECT 'acgtacgt'::dna;
 SELECT 'AXGT'::dna;
-
+```
 
 Expected results:
 
-ACGTAC
+- `ACGTAC`  
+- `ACGTACGT`  
+- Error: invalid base `X`  
 
-ACGTACGT
+If this behaves correctly, the extension is properly installed.
 
-Error: invalid base X
+---
 
-If these succeed, the extension is correctly installed.
+# Troubleshooting
 
-Troubleshooting
-Problem: /pg_dna is empty inside the container
+## `/pg_dna` is empty inside the container
 
-Cause: The bind mount is not working.
+Cause: The bind mount failed.
 
 Fix:
 
-Ensure your docker-compose.yml includes:
+1. Ensure your `docker-compose.yml` includes:
 
+```
 volumes:
   - .:/pg_dna
+```
 
+2. Reset environment:
 
-Reset environment:
-
+```bash
 docker compose down
 rm -rf data/
 docker compose up -d
+```
 
+3. Ensure Docker runs without sudo:
 
-Ensure you can run Docker without sudo:
-
+```bash
 sudo usermod -aG docker $USER
 newgrp docker
+```
 
-Problem: data/ cannot be removed
+---
 
-Cause: It was created by Docker under root.
+## `data/` cannot be removed
+
+Cause: It was created using sudo.
 
 Fix:
 
+```bash
 sudo rm -rf data/
+```
 
-Problem: PostgreSQL cannot load pg_dna.so
+---
 
-Cause: PostgreSQL must be restarted after each make install.
+## PostgreSQL cannot load `pg_dna.so`
+
+Cause: PostgreSQL must be restarted after each installation.
 
 Fix:
 
+```bash
 docker restart pg_dna_dev
+```
 
-Problem: Missing PostgreSQL headers
+---
 
-If you see:
+## Missing headers (`postgres.h: No such file or directory`)
 
-postgres.h: No such file or directory
+Fix:
 
-
-Install:
-
+```bash
 apt-get install postgresql-server-dev-16
+```
 
-Project Structure
+---
+
+# Project Structure
+
+```
 project_pg_dna/
 │
 ├── docker-compose.yml
@@ -184,35 +212,30 @@ project_pg_dna/
 │   ├── spgist_kmer.c
 │   └── ...
 └── README.md
+```
 
-Team Usage (ULB)
+---
+
+# Team Usage (ULB)
 
 Each team member can:
 
-Clone the repository
+1. Clone the repository  
+2. Start the Docker environment with `docker compose up -d`  
+3. Enter the container and compile the extension  
+4. Edit the code locally from the host machine  
+5. Rebuild using `make clean && make && make install`  
+6. Restart PostgreSQL and test  
 
-Start the environment with docker compose up -d
+This ensures a consistent development environment.
 
-Enter the container and compile the extension
+---
 
-Edit source files locally on their machine
+# Notes for Contributors
 
-Rebuild using make clean && make && make install
-
-Restart PostgreSQL and test with psql
-
-This ensures consistent development and avoids dependency mismatches.
-
-Notes for Contributors
-
-Always compile inside the container
-
-Never copy .so files manually
-
-Always restart PostgreSQL after installation
-
-Keep Makefile portable
-
-Avoid committing root-owned files
-
-Use Git branches for new features
+- Always compile inside Docker  
+- Never copy `.so` files manually  
+- Always restart PostgreSQL after installation  
+- Keep the Makefile clean and portable  
+- Avoid committing root-owned files  
+- Use Git branches for new features  
