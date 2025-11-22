@@ -1,0 +1,27 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: pg_dna_dev
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5440:5432"      # Host port 5440 → Container port 5432
+    volumes:
+      - ./data:/var/lib/postgresql/data
+      - .:/pg_dna   # Mount your extension code directly
+    restart: unless-stopped
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin_pg_dna
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "8081:80"          # Access PGAdmin UI via http://localhost:8081
+    depends_on:
+      - postgres
+    restart: unless-stopped
