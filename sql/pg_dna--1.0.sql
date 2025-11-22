@@ -30,3 +30,9 @@ AS 'pg_dna', 'dna_length'
 LANGUAGE C IMMUTABLE STRICT;
 
 COMMENT ON TYPE dna IS 'DNA sequence type stored like text (A/C/G/T only)';
+
+--6. Utility: get nucleotide at specific position (1-based index)
+CREATE FUNCTION dna_get(dna, integer)
+RETURNS text
+AS 'pg_dna', 'dna_get'
+LANGUAGE C IMMUTABLE STRICT;

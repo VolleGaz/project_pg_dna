@@ -99,3 +99,46 @@ dna_length(PG_FUNCTION_ARGS)
     Dna *dna = (Dna *) PG_GETARG_POINTER(0);
     PG_RETURN_INT32((int32) dna->length);
 }
+
+PG_FUNCTION_INFO_V1(dna_get);
+
+/*
+ * dna_get(dna, integer) -> text (single char)
+ *
+ * Returns the i-th base of the DNA sequence (1-based indexing).
+ */
+Datum
+dna_get(PG_FUNCTION_ARGS)
+{
+    Dna *dna = (Dna *) PG_GETARG_POINTER(0);
+    int32 index = PG_GETARG_INT32(1);
+
+    if (index < 1 || index > dna->length)
+        ereport(ERROR,
+                (errcode(ERRCODE_ARRAY_SUBSCRIPT_ERROR),
+                 errmsg("index %d out of range (1..%u)", index, dna->length)));
+
+    /* convert to 0-based */
+    uint32 i = index - 1;
+
+    uint32 byte_index = i / 4;
+    uint32 shift = (3 - (i % 4)) * 2;
+
+    unsigned char packed = (dna->data[byte_index] >> shift) & 0x3;
+
+    char result_char;
+    switch (packed)
+    {
+        case 0: result_char = 'A'; break;
+        case 1: result_char = 'C'; break;
+        case 2: result_char = 'G'; break;
+        case 3: result_char = 'T'; break;
+        default: result_char = '?'; /* impossible */
+    }
+
+    /* return a text of length 1 */
+    text *out = cstring_to_text_with_len(&result_char, 1);
+
+    PG_RETURN_TEXT_P(out);
+}
+
