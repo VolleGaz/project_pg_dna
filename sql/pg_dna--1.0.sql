@@ -68,3 +68,35 @@ CREATE FUNCTION qkmer_length(qkmer) RETURNS integer AS 'pg_dna',
 'qkmer_length' LANGUAGE C IMMUTABLE STRICT;
 CREATE FUNCTION length(qkmer) RETURNS integer AS 'pg_dna',
 'qkmer_length' LANGUAGE C IMMUTABLE STRICT;
+-- ============================================
+-- kmer and qkmer operators
+-- ============================================
+-- 1. Functions
+CREATE FUNCTION kmer_eq(kmer, kmer) RETURNS boolean AS 'pg_dna',
+'kmer_eq' LANGUAGE C IMMUTABLE STRICT;
+CREATE FUNCTION kmer_starts_with(kmer, kmer) RETURNS boolean AS 'pg_dna',
+'kmer_starts_with' LANGUAGE C IMMUTABLE STRICT;
+CREATE FUNCTION qkmer_contains(qkmer, kmer) RETURNS boolean AS 'pg_dna',
+'qkmer_contains' LANGUAGE C IMMUTABLE STRICT;
+-- 2. Operators
+-- equality: = on kmer
+CREATE OPERATOR = (
+    LEFTARG = kmer,
+    RIGHTARG = kmer,
+    PROCEDURE = kmer_eq,
+    COMMUTATOR = '=',
+    RESTRICT = eqsel,
+    JOIN = eqjoinsel
+);
+-- prefix: ^@  (LEFT ^@ RIGHT means LEFT is a prefix of RIGHT)
+CREATE OPERATOR ^@ (
+    LEFTARG = kmer,
+    RIGHTARG = kmer,
+    PROCEDURE = kmer_starts_with
+);
+-- pattern: qkmer @> kmer
+CREATE OPERATOR @> (
+    LEFTARG = qkmer,
+    RIGHTARG = kmer,
+    PROCEDURE = qkmer_contains
+);
