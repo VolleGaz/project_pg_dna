@@ -1,5 +1,7 @@
 #include "postgres.h"
+#if PG_VERSION_NUM >= 160000
 #include "varatt.h"
+#endif
 #include "fmgr.h"
 #include "utils/builtins.h"
 #include "utils/memutils.h"
@@ -152,7 +154,12 @@ kmer_out(PG_FUNCTION_ARGS)
     int   n;
     char *res;
 
-    k = (Kmer *) PG_DETOAST_DATUM_PACKED(PG_GETARG_DATUM(0));
+    /*
+     * Use PG_DETOAST_DATUM to force a 4-byte header representation.
+     * Small values may be stored with a 1-byte varlena header, which would
+     * misalign the length field in our struct.
+     */
+    k = (Kmer *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
     check_kmer_consistency(k);
 
     n   = kmer_length_internal(k);
@@ -180,7 +187,7 @@ kmer_length(PG_FUNCTION_ARGS)
     Kmer *k;
     int   n;
 
-    k = (Kmer *) PG_DETOAST_DATUM_PACKED(PG_GETARG_DATUM(0));
+    k = (Kmer *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
     check_kmer_consistency(k);
 
     n = kmer_length_internal(k);

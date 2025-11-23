@@ -78,6 +78,10 @@ CREATE FUNCTION kmer_starts_with(kmer, kmer) RETURNS boolean AS 'pg_dna',
 'kmer_starts_with' LANGUAGE C IMMUTABLE STRICT;
 CREATE FUNCTION qkmer_contains(qkmer, kmer) RETURNS boolean AS 'pg_dna',
 'qkmer_contains' LANGUAGE C IMMUTABLE STRICT;
+-- generate_kmers(dna, k) → SETOF kmer
+CREATE FUNCTION generate_kmers(dna, integer)
+RETURNS SETOF kmer AS 'pg_dna', 'generate_kmers'
+LANGUAGE C IMMUTABLE STRICT;
 -- 2. Operators
 -- equality: = on kmer
 CREATE OPERATOR = (

@@ -10,3 +10,6 @@ include $(PGXS)
 
 test:
 	psql -v ON_ERROR_STOP=1 -U postgres -f tests/test_dna.sql
+	psql -v ON_ERROR_STOP=1 -U postgres -f tests/test_generate_kmers.sql
+	psql -v ON_ERROR_STOP=1 -U postgres -f tests/test_kmer.sql
+	psql -v ON_ERROR_STOP=1 -U postgres -f tests/test_qkmer.sql

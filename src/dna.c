@@ -1,5 +1,7 @@
 #include "postgres.h"
+#if PG_VERSION_NUM >= 160000
 #include "varatt.h"
+#endif
 #include "fmgr.h"
 #include "utils/varlena.h"
 #include "utils/builtins.h"
@@ -202,7 +204,7 @@ dna_out(PG_FUNCTION_ARGS)
      * a read-only buffer; we must not pfree(dna).
      */
     arg = PG_GETARG_DATUM(0);
-    dna = (Dna *) PG_DETOAST_DATUM_PACKED(arg);
+    dna = (Dna *) PG_DETOAST_DATUM(arg);
 
     /* Sanity check on internal structure. */
     check_dna_consistency(dna);
@@ -240,7 +242,7 @@ dna_length(PG_FUNCTION_ARGS)
     Dna   *dna;
 
     arg = PG_GETARG_DATUM(0);
-    dna = (Dna *) PG_DETOAST_DATUM_PACKED(arg);
+    dna = (Dna *) PG_DETOAST_DATUM(arg);
 
     check_dna_consistency(dna);
 
@@ -266,7 +268,7 @@ dna_get(PG_FUNCTION_ARGS)
     text  *result_text;
 
     arg = PG_GETARG_DATUM(0);
-    dna = (Dna *) PG_DETOAST_DATUM_PACKED(arg);
+    dna = (Dna *) PG_DETOAST_DATUM(arg);
 
     check_dna_consistency(dna);
 

@@ -1,5 +1,7 @@
 #include "postgres.h"
+#if PG_VERSION_NUM >= 160000
 #include "varatt.h"
+#endif
 #include "fmgr.h"
 #include "utils/varlena.h"
 #include "utils/builtins.h"
@@ -138,7 +140,7 @@ PG_FUNCTION_INFO_V1(qkmer_out);
 
 Datum qkmer_out(PG_FUNCTION_ARGS)
 {
-    QKmer *q = (QKmer *)PG_DETOAST_DATUM_PACKED(PG_GETARG_DATUM(0));
+    QKmer *q = (QKmer *)PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
 
     check_qkmer_consistency(q);
 
@@ -158,7 +160,7 @@ PG_FUNCTION_INFO_V1(qkmer_length);
 
 Datum qkmer_length(PG_FUNCTION_ARGS)
 {
-    QKmer *q = (QKmer *)PG_DETOAST_DATUM_PACKED(PG_GETARG_DATUM(0));
+    QKmer *q = (QKmer *)PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
 
     check_qkmer_consistency(q);
 

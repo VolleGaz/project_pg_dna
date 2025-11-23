@@ -23,4 +23,9 @@ typedef struct Kmer
     unsigned char data[FLEXIBLE_ARRAY_MEMBER];
 } Kmer;
 
+/* prototypes needed outside kmer.c */
+extern Datum kmer_in(PG_FUNCTION_ARGS);
+extern Datum kmer_out(PG_FUNCTION_ARGS);
+extern Datum kmer_length(PG_FUNCTION_ARGS);
+
 #endif /* KMER_H */

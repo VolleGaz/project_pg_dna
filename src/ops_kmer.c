@@ -1,5 +1,7 @@
 #include "postgres.h"
+#if PG_VERSION_NUM >= 160000
 #include "varatt.h"
+#endif
 #include "fmgr.h"
 #include "utils/varlena.h"
 #include "utils/builtins.h"
@@ -93,8 +95,8 @@ qbase_matches(char q, char base)
 Datum
 kmer_eq(PG_FUNCTION_ARGS)
 {
-    Kmer *a = (Kmer *) PG_DETOAST_DATUM_PACKED(PG_GETARG_DATUM(0));
-    Kmer *b = (Kmer *) PG_DETOAST_DATUM_PACKED(PG_GETARG_DATUM(1));
+    Kmer *a = (Kmer *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+    Kmer *b = (Kmer *) PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
 
     int na = a->length;
     int nb = b->length;
@@ -120,8 +122,8 @@ kmer_eq(PG_FUNCTION_ARGS)
 Datum
 kmer_starts_with(PG_FUNCTION_ARGS)
 {
-    Kmer *prefix = (Kmer *) PG_DETOAST_DATUM_PACKED(PG_GETARG_DATUM(0));
-    Kmer *value  = (Kmer *) PG_DETOAST_DATUM_PACKED(PG_GETARG_DATUM(1));
+    Kmer *prefix = (Kmer *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+    Kmer *value  = (Kmer *) PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
 
     int np = prefix->length;
     int nv = value->length;
@@ -150,8 +152,8 @@ kmer_starts_with(PG_FUNCTION_ARGS)
 Datum
 qkmer_contains(PG_FUNCTION_ARGS)
 {
-    QKmer *pattern = (QKmer *) PG_DETOAST_DATUM_PACKED(PG_GETARG_DATUM(0));
-    Kmer  *value   = (Kmer  *) PG_DETOAST_DATUM_PACKED(PG_GETARG_DATUM(1));
+    QKmer *pattern = (QKmer *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+    Kmer  *value   = (Kmer  *) PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
 
     check_qkmer_consistency_ops(pattern);
 
