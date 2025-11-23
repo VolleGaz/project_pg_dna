@@ -46,3 +46,25 @@ CREATE FUNCTION kmer_length(kmer) RETURNS integer AS 'pg_dna',
 'kmer_length' LANGUAGE C IMMUTABLE STRICT;
 CREATE FUNCTION length(kmer) RETURNS integer AS 'pg_dna',
 'kmer_length' LANGUAGE C IMMUTABLE STRICT;
+-- ============================================
+-- qkmer type
+-- ============================================
+-- 1. Shell type
+CREATE TYPE qkmer;
+-- 2. I/O functions
+CREATE FUNCTION qkmer_in(cstring) RETURNS qkmer AS 'pg_dna',
+'qkmer_in' LANGUAGE C IMMUTABLE STRICT;
+CREATE FUNCTION qkmer_out(qkmer) RETURNS cstring AS 'pg_dna',
+'qkmer_out' LANGUAGE C IMMUTABLE STRICT;
+-- 3. Complete qkmer type definition
+CREATE TYPE qkmer (
+    INPUT = qkmer_in,
+    OUTPUT = qkmer_out,
+    INTERNALLENGTH = VARIABLE,
+    STORAGE = EXTENDED
+);
+-- 4. length(qkmer)
+CREATE FUNCTION qkmer_length(qkmer) RETURNS integer AS 'pg_dna',
+'qkmer_length' LANGUAGE C IMMUTABLE STRICT;
+CREATE FUNCTION length(qkmer) RETURNS integer AS 'pg_dna',
+'qkmer_length' LANGUAGE C IMMUTABLE STRICT;

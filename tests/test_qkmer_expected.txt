@@ -1,0 +1,32 @@
+ qkmer 
+-------
+ ACGT
+(1 row)
+
+    qkmer    
+-------------
+ NRYSWKMBDHV
+(1 row)
+
+ qkmer 
+-------
+ ACGT
+(1 row)
+
+ length 
+--------
+      2
+(1 row)
+
+ length 
+--------
+     32
+(1 row)
+
+psql:test_qkmer.sql:10: ERROR:  qkmer cannot be empty
+LINE 1: SELECT ''::qkmer;
+               ^
+psql:test_qkmer.sql:11: ERROR:  invalid qkmer base: 'Z' (allowed: A,C,G,T,N,R,Y,S,W,K,M,B,D,H,V)
+LINE 1: SELECT 'Z'::qkmer;
+               ^
+psql:test_qkmer.sql:12: ERROR:  qkmer length 33 exceeds maximum 32
