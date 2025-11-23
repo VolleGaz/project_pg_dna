@@ -1,0 +1,11 @@
+--- Input/Output ---
+ACGT
+ACGT
+
+--- Length ---
+4
+32
+
+--- Errors ---
+ERROR:  kmer length 40 exceeds maximum 32
+ERROR:  invalid kmer base: 'X' (allowed: A,C,G,T only)
