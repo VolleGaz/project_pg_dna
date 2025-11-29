@@ -27,5 +27,6 @@ typedef struct Kmer
 extern Datum kmer_in(PG_FUNCTION_ARGS);
 extern Datum kmer_out(PG_FUNCTION_ARGS);
 extern Datum kmer_length(PG_FUNCTION_ARGS);
+extern char kmer_get_base(const Kmer *k, int i);
 
 #endif /* KMER_H */

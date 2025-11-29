@@ -83,6 +83,8 @@ CREATE FUNCTION generate_kmers(dna, integer)
 RETURNS SETOF kmer AS 'pg_dna', 'generate_kmers'
 LANGUAGE C IMMUTABLE STRICT;
 -- 2. Operators
+
+
 -- equality: = on kmer
 CREATE OPERATOR = (
     LEFTARG = kmer,
@@ -92,10 +94,10 @@ CREATE OPERATOR = (
     RESTRICT = eqsel,
     JOIN = eqjoinsel
 );
--- prefix: ^@  (LEFT ^@ RIGHT means LEFT is a prefix of RIGHT)
+-- prefix: ^@
 CREATE OPERATOR ^@ (
-    LEFTARG = kmer,
-    RIGHTARG = kmer,
+    LEFTARG   = kmer,
+    RIGHTARG  = kmer,
     PROCEDURE = kmer_starts_with
 );
 -- pattern: qkmer @> kmer
@@ -104,3 +106,46 @@ CREATE OPERATOR @> (
     RIGHTARG = kmer,
     PROCEDURE = qkmer_contains
 );
+
+-- SP-GiST support functions for kmer
+CREATE FUNCTION spg_kmer_config(internal, internal)
+    RETURNS void
+AS 'MODULE_PATHNAME', 'spg_kmer_config'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION spg_kmer_choose(internal, internal)
+    RETURNS void
+AS 'MODULE_PATHNAME', 'spg_kmer_choose'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION spg_kmer_picksplit(internal, internal)
+    RETURNS void
+AS 'MODULE_PATHNAME', 'spg_kmer_picksplit'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION spg_kmer_inner_consistent(internal, internal)
+    RETURNS void
+AS 'MODULE_PATHNAME', 'spg_kmer_inner_consistent'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION spg_kmer_leaf_consistent(internal, internal)
+    RETURNS void
+AS 'MODULE_PATHNAME', 'spg_kmer_leaf_consistent'
+LANGUAGE C IMMUTABLE STRICT;
+
+-- framework sp-gist
+
+CREATE OPERATOR CLASS kmer_spgist_ops
+DEFAULT FOR TYPE kmer USING spgist AS
+    STORAGE kmer,
+
+    -- 3  = operator
+    -- 28 ^@ operator
+    OPERATOR  3  =  (kmer, kmer),
+    OPERATOR 28  ^@ (kmer, kmer),
+
+    FUNCTION 1  spg_kmer_config           (internal, internal),
+    FUNCTION 2  spg_kmer_choose           (internal, internal),
+    FUNCTION 3  spg_kmer_picksplit        (internal, internal),
+    FUNCTION 4  spg_kmer_inner_consistent (internal, internal),
+    FUNCTION 5  spg_kmer_leaf_consistent  (internal, internal);

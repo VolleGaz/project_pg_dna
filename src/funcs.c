@@ -50,9 +50,6 @@ generate_kmers(PG_FUNCTION_ARGS)
         uint32        dna_len;
         int32         k;
 
-        if (PG_ARGISNULL(0) || PG_ARGISNULL(1))
-            SRF_RETURN_DONE(NULL);   /* STRICT in SQL should prevent this */
-
         k = PG_GETARG_INT32(1);
         if (k <= 0)
             ereport(ERROR,

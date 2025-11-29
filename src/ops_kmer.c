@@ -15,16 +15,7 @@ PG_FUNCTION_INFO_V1(kmer_eq);
 PG_FUNCTION_INFO_V1(kmer_starts_with);
 PG_FUNCTION_INFO_V1(qkmer_contains);
 
-/* Decode kmer base: same layout as in kmer.c */
-static inline char
-kmer_get_base(const Kmer *k, int i)
-{
-    int           byte_index = i / 4;
-    int           shift      = (3 - (i % 4)) * 2;
-    unsigned char v          = (k->data[byte_index] >> shift) & 0x03;
-    static const char table[4] = { 'A', 'C', 'G', 'T' };
-    return table[v];
-}
+
 
 /* qkmer helpers: length and consistency (same as qkmer.c logic) */
 static inline int
@@ -122,8 +113,8 @@ kmer_eq(PG_FUNCTION_ARGS)
 Datum
 kmer_starts_with(PG_FUNCTION_ARGS)
 {
-    Kmer *prefix = (Kmer *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
-    Kmer *value  = (Kmer *) PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
+    Kmer *value = (Kmer *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+    Kmer *prefix  = (Kmer *) PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
 
     int np = prefix->length;
     int nv = value->length;
