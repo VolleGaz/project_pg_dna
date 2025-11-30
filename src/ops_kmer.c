@@ -14,6 +14,7 @@
 PG_FUNCTION_INFO_V1(kmer_eq);
 PG_FUNCTION_INFO_V1(kmer_starts_with);
 PG_FUNCTION_INFO_V1(qkmer_contains);
+PG_FUNCTION_INFO_V1(kmer_contained_by);
 
 
 
@@ -167,4 +168,18 @@ qkmer_contains(PG_FUNCTION_ARGS)
     }
 
     PG_RETURN_BOOL(true);
+}
+
+
+Datum
+kmer_contained_by(PG_FUNCTION_ARGS)
+{
+    // Arguments: arg0=kmer, arg1=qkmer
+    // qkmer_contains expects: arg0=qkmer, arg1=kmer
+    // So swap them!
+
+    Datum kmer_arg  = PG_GETARG_DATUM(0);
+    Datum qkmer_arg = PG_GETARG_DATUM(1);
+
+    return DirectFunctionCall2(qkmer_contains, qkmer_arg, kmer_arg);
 }

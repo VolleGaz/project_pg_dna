@@ -6,8 +6,12 @@
 #include "catalog/pg_type.h"
 #include "utils/varlena.h"
 #include "access/spgist.h"
+#include "varatt.h"
 #include "kmer.h"
+#include "qkmer.h"
 
+#define KMER_QKMER_CONTAINS_STRATEGY 10
+#define KMER_PREFIX_CONTAINS_STRATEGY 28
 /**
 * implementation of the generic spgist functions
 **/
@@ -132,12 +136,73 @@ spg_kmer_picksplit(PG_FUNCTION_ARGS)
 }
 
 
+static inline int
+qkmer_length_internal_spg(const QKmer *q)
+{
+    Size size   = VARSIZE_ANY(q);
+    Size header = offsetof(QKmer, data);
+
+    if (size < header)
+        ereport(ERROR,
+                (errcode(ERRCODE_DATA_CORRUPTED),
+                 errmsg("qkmer value is corrupted")));
+    return (int) (size - header);
+}
+
+// IUPAC qkmer code
+static inline bool
+qbase_matches_spg(char q, char base)
+{
+    switch (q)
+    {
+        case 'A': return base == 'A';
+        case 'C': return base == 'C';
+        case 'G': return base == 'G';
+        case 'T': return base == 'T';
+
+        case 'N': return (base == 'A' || base == 'C' || base == 'G' || base == 'T');
+        case 'R': return (base == 'A' || base == 'G');
+        case 'Y': return (base == 'C' || base == 'T');
+        case 'S': return (base == 'G' || base == 'C');
+        case 'W': return (base == 'A' || base == 'T');
+        case 'K': return (base == 'G' || base == 'T');
+        case 'M': return (base == 'A' || base == 'C');
+        case 'B': return (base == 'C' || base == 'G' || base == 'T');
+        case 'D': return (base == 'A' || base == 'G' || base == 'T');
+        case 'H': return (base == 'A' || base == 'C' || base == 'T');
+        case 'V': return (base == 'A' || base == 'C' || base == 'G');
+
+        default:
+            ereport(ERROR,
+                    (errcode(ERRCODE_DATA_CORRUPTED),
+                     errmsg("qkmer contains invalid IUPAC code '%c'", q)));
+            return false;
+    }
+}
+
+// map index child
+static inline char
+child_index_to_base(int nodeN)
+{
+    switch (nodeN)
+    {
+        case 0: return 'A';
+        case 1: return 'C';
+        case 2: return 'G';
+        case 3: return 'T';
+        default: return '\0';  //end
+    }
+}
+
+
 Datum
 spg_kmer_inner_consistent(PG_FUNCTION_ARGS)
 {
     spgInnerConsistentIn  *in  = (spgInnerConsistentIn *) PG_GETARG_POINTER(0);
     spgInnerConsistentOut *out = (spgInnerConsistentOut *) PG_GETARG_POINTER(1);
-
+    elog(WARNING, "inner_consistent called: level=%d, nNodes=%d, nkeys=%d",
+         in->level, in->nNodes, in->nkeys);
+    
     int nVisit = 0;
 
     // not used
@@ -178,7 +243,7 @@ spg_kmer_inner_consistent(PG_FUNCTION_ARGS)
 
         if (in->level < qlen)
         {
-            nodeN = kmer_node_for_level(q, in->level);
+            nodeN = kmer_node_for_level(q, in->level); //gives us the exact child to follow so we don't visit all childeren nodes
         }
         else
         {
@@ -198,7 +263,7 @@ spg_kmer_inner_consistent(PG_FUNCTION_ARGS)
 
      //préfixe k starts_with prefix ^@ operator
     // less agressive pruning due to the fact that we have to return a set with multiple branches
-    else if (strategy == 28	)
+    else if (strategy == KMER_PREFIX_CONTAINS_STRATEGY	)
     {
         Kmer *prefix = (Kmer *) PG_DETOAST_DATUM(key->sk_argument);
         int   plen   = prefix->length;
@@ -206,7 +271,7 @@ spg_kmer_inner_consistent(PG_FUNCTION_ARGS)
         if (in->level < plen)
         {
             //while we have not explored all the prefixe on the path we continue on the correponding base
-            int nodeN = kmer_node_for_level(prefix, in->level);
+            int nodeN = kmer_node_for_level(prefix, in->level); // same as = operator but until we reach prefix lenght then we explore all
 
             if (nodeN >= 0 && nodeN < in->nNodes)
             {
@@ -218,7 +283,7 @@ spg_kmer_inner_consistent(PG_FUNCTION_ARGS)
         else
         {
              // entire prefixe on the path we followed all the base
-            for (int i = 0; i < in->nNodes; i++)
+            for (int i = 0; i < in->nNodes; i++) // since we aleardy mateched the prefixe, now we just have from there visit everything
             {
                 out->nodeNumbers[nVisit] = i;
                 out->levelAdds[nVisit]   = 1;
@@ -228,10 +293,68 @@ spg_kmer_inner_consistent(PG_FUNCTION_ARGS)
 
         out->nNodes = nVisit;
     }
-    //evrything else (qkmer for exemple) we just visit all childeren
+    // qkmer
+	else if (strategy == KMER_QKMER_CONTAINS_STRATEGY)
+	{
+    	QKmer *pattern;
+    	int    plen;
+    	int    level;
+    	int    i;
+
+   		 /* 1) Récupérer le qkmer de la requête */
+   		pattern = (QKmer *) PG_DETOAST_DATUM(key->sk_argument);
+    	plen    = qkmer_length_internal_spg(pattern);
+    	level   = in->level;
+
+
+    	if (level >= plen)
+    	{
+        	for (i = 0; i < in->nNodes; i++)
+        	{
+        	    out->nodeNumbers[nVisit] = i;
+        	    out->levelAdds[nVisit]   = 1;
+        	    nVisit++;
+        	}
+    	}
+    	else
+    	{
+      		char q;
+
+        	q = pattern->data[level];
+
+
+        	for (i = 0; i < in->nNodes; i++)
+        	{
+           		int  child = i;
+            	char base  = child_index_to_base(child);
+
+            	if (base == '\0')
+            	{
+
+                	out->nodeNumbers[nVisit] = child;
+                	out->levelAdds[nVisit]   = 1;
+                	nVisit++;
+            	}
+            	else
+            	{
+
+                	if (qbase_matches_spg(q, base))
+                	{
+                    	out->nodeNumbers[nVisit] = child;
+                    	out->levelAdds[nVisit]   = 1;
+                    	nVisit++;
+                	}
+            	}
+        	}
+    	}
+
+    	out->nNodes = nVisit;
+	}
+
+    //evrything else  we just visit all childeren
     else
     {
-        for (int i = 0; i < in->nNodes; i++)
+        for (int i = 0; i < in->nNodes; i++) //just visits verything in a bfs way
         {
             out->nodeNumbers[nVisit] = i;
             out->levelAdds[nVisit]   = 1;
@@ -287,36 +410,75 @@ spg_kmer_leaf_consistent(PG_FUNCTION_ARGS)
     spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
 
     bool res = true;
+    int  i;
 
-    // leafValue
+    //leaf value
     out->leafValue        = in->leafDatum;
     out->recheck          = false;
     out->recheckDistances = false;
 
-    // no keys -> everything matches
+    // no key -> evrything matches
     if (in->nkeys == 0)
         PG_RETURN_BOOL(true);
 
+    //kmer of the leaf
     Kmer *leaf = (Kmer *) PG_DETOAST_DATUM(in->leafDatum);
 
-    // check all searches keys (including the AND)
-    for (int i = 0; i < in->nkeys; i++)
+    for (i = 0; i < in->nkeys; i++)
     {
         ScanKey        key      = &in->scankeys[i];
         StrategyNumber strategy = key->sk_strategy;
-        Kmer          *query    = (Kmer *) PG_DETOAST_DATUM(key->sk_argument);
 
         if (strategy == BTEqualStrategyNumber)
         {
+            Kmer *query = (Kmer *) PG_DETOAST_DATUM(key->sk_argument);
+
             if (!kmer_equal_internal(leaf, query))
             {
                 res = false;
                 break;
             }
         }
-        else if (strategy == 28)
+        else if (strategy == KMER_PREFIX_CONTAINS_STRATEGY)
         {
-            if (!kmer_starts_with_internal(query, leaf))
+            Kmer *prefix = (Kmer *) PG_DETOAST_DATUM(key->sk_argument);
+
+            if (!kmer_starts_with_internal(prefix, leaf))
+            {
+                res = false;
+                break;
+            }
+        }
+        else if (strategy == KMER_QKMER_CONTAINS_STRATEGY)
+        {
+
+
+            QKmer *pattern   = (QKmer *) PG_DETOAST_DATUM(key->sk_argument);
+            int    plen      = qkmer_length_internal_spg(pattern);
+            int    klen      = leaf->length;
+            int    pos;
+            bool   ok = true;
+
+            // same lenght
+            if (plen != klen)
+            {
+                res = false;
+                break;
+            }
+
+            for (pos = 0; pos < plen; pos++)
+            {
+                char q = pattern->data[pos];   //iupac
+                char b = kmer_get_base(leaf, pos);  //ACGT
+
+                if (!qbase_matches_spg(q, b))
+                {
+                    ok = false;
+                    break;
+                }
+            }
+
+            if (!ok)
             {
                 res = false;
                 break;
@@ -324,10 +486,10 @@ spg_kmer_leaf_consistent(PG_FUNCTION_ARGS)
         }
         else
         {
-            //unkown strat
             out->recheck = true;
         }
     }
 
     PG_RETURN_BOOL(res);
 }
+

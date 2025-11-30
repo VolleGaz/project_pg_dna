@@ -100,12 +100,27 @@ CREATE OPERATOR ^@ (
     RIGHTARG  = kmer,
     PROCEDURE = kmer_starts_with
 );
+
+
+
 -- pattern: qkmer @> kmer
 CREATE OPERATOR @> (
     LEFTARG = qkmer,
     RIGHTARG = kmer,
     PROCEDURE = qkmer_contains
 );
+
+CREATE FUNCTION kmer_contained_by(kmer, qkmer) RETURNS boolean AS 'pg_dna',
+'kmer_contained_by' LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OPERATOR <@ (
+    LEFTARG = kmer,
+    RIGHTARG = qkmer,
+    PROCEDURE = kmer_contained_by,
+    COMMUTATOR = '@>'
+);
+
+
 
 -- SP-GiST support functions for kmer
 CREATE FUNCTION spg_kmer_config(internal, internal)
@@ -141,9 +156,10 @@ DEFAULT FOR TYPE kmer USING spgist AS
 
     -- 3  = operator
     -- 28 ^@ operator
+    -- 10 operator  @>
     OPERATOR  3  =  (kmer, kmer),
     OPERATOR 28  ^@ (kmer, kmer),
-
+    OPERATOR 10 <@ (kmer, qkmer),
     FUNCTION 1  spg_kmer_config           (internal, internal),
     FUNCTION 2  spg_kmer_choose           (internal, internal),
     FUNCTION 3  spg_kmer_picksplit        (internal, internal),
