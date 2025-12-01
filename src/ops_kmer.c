@@ -15,6 +15,8 @@ PG_FUNCTION_INFO_V1(kmer_eq);
 PG_FUNCTION_INFO_V1(kmer_starts_with);
 PG_FUNCTION_INFO_V1(qkmer_contains);
 PG_FUNCTION_INFO_V1(kmer_contained_by);
+PG_FUNCTION_INFO_V1(kmer_cmp);
+
 
 
 
@@ -183,3 +185,31 @@ kmer_contained_by(PG_FUNCTION_ARGS)
 
     return DirectFunctionCall2(qkmer_contains, qkmer_arg, kmer_arg);
 }
+
+Datum
+kmer_cmp(PG_FUNCTION_ARGS)
+{
+    Kmer *a = (Kmer*) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+    Kmer *b = (Kmer*) PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
+
+    int na = a->length;
+    int nb = b->length;
+
+    int min = (na < nb ? na : nb);
+
+    for (int i = 0; i < min; i++)
+    {
+        char ba = kmer_get_base(a, i);
+        char bb = kmer_get_base(b, i);
+
+        if (ba < bb) PG_RETURN_INT32(-1);
+        if (ba > bb) PG_RETURN_INT32(1);
+    }
+
+    /* If all equal so far, shorter one is smaller */
+    if (na < nb) PG_RETURN_INT32(-1);
+    if (na > nb) PG_RETURN_INT32(1);
+
+    PG_RETURN_INT32(0);
+}
+

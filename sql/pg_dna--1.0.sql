@@ -148,6 +148,90 @@ CREATE FUNCTION spg_kmer_leaf_consistent(internal, internal)
 AS 'MODULE_PATHNAME', 'spg_kmer_leaf_consistent'
 LANGUAGE C IMMUTABLE STRICT;
 
+-- Hash function for GROUP BY and DISTINCT
+CREATE FUNCTION kmer_hash(kmer)
+RETURNS integer
+AS 'pg_dna', 'kmer_hash'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+
+CREATE OPERATOR CLASS kmer_hash_ops
+DEFAULT FOR TYPE kmer USING hash AS
+    OPERATOR 1 = (kmer, kmer),
+    FUNCTION 1 kmer_hash(kmer);
+
+CREATE FUNCTION kmer_cmp(kmer, kmer)
+RETURNS integer
+AS 'pg_dna', 'kmer_cmp'
+LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION kmer_lt(kmer, kmer)
+RETURNS boolean
+AS $$
+    SELECT kmer_cmp($1, $2) < 0;
+$$ LANGUAGE SQL IMMUTABLE STRICT;
+
+CREATE OPERATOR < (
+    LEFTARG = kmer, RIGHTARG = kmer,
+    PROCEDURE = kmer_lt,
+    COMMUTATOR = '>',
+    NEGATOR = '>=',
+    RESTRICT = scalarltsel,
+    JOIN = scalarltjoinsel
+);
+
+CREATE FUNCTION kmer_le(kmer, kmer)
+RETURNS boolean AS $$
+    SELECT kmer_cmp($1, $2) <= 0;
+$$ LANGUAGE SQL IMMUTABLE STRICT;
+
+CREATE OPERATOR <= (
+    LEFTARG = kmer, RIGHTARG = kmer,
+    PROCEDURE = kmer_le,
+    COMMUTATOR = '>=',
+    NEGATOR = '>',
+    RESTRICT = scalarlesel,
+    JOIN = scalarlejoinsel
+);
+
+CREATE FUNCTION kmer_gt(kmer, kmer)
+RETURNS boolean AS $$
+    SELECT kmer_cmp($1, $2) > 0;
+$$ LANGUAGE SQL IMMUTABLE STRICT;
+
+CREATE OPERATOR > (
+    LEFTARG = kmer, RIGHTARG = kmer,
+    PROCEDURE = kmer_gt,
+    COMMUTATOR = '<',
+    NEGATOR = '<=',
+    RESTRICT = scalargtsel,
+    JOIN = scalargtjoinsel
+);
+
+CREATE FUNCTION kmer_ge(kmer, kmer)
+RETURNS boolean AS $$
+    SELECT kmer_cmp($1, $2) >= 0;
+$$ LANGUAGE SQL IMMUTABLE STRICT;
+
+CREATE OPERATOR >= (
+    LEFTARG = kmer, RIGHTARG = kmer,
+    PROCEDURE = kmer_ge,
+    COMMUTATOR = '<=',
+    NEGATOR = '<',
+    RESTRICT = scalargesel,
+    JOIN = scalargejoinsel
+);
+
+CREATE OPERATOR CLASS kmer_btree_ops
+DEFAULT FOR TYPE kmer USING btree AS
+    OPERATOR 1  <  (kmer, kmer),
+    OPERATOR 2  <= (kmer, kmer),
+    OPERATOR 3  =  (kmer, kmer),
+    OPERATOR 4  >= (kmer, kmer),
+    OPERATOR 5  >  (kmer, kmer),
+    FUNCTION 1 kmer_cmp(kmer, kmer);
+
+
 -- framework sp-gist
 
 CREATE OPERATOR CLASS kmer_spgist_ops
