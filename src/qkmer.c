@@ -26,10 +26,9 @@
  *   N R Y S W K M B D H V
  */
 
-/* ------------------------------------------------------------------------
+/**
  * Helpers
- * ------------------------------------------------------------------------
- */
+ **/
 
 /* Normalize and validate a qkmer base; return uppercase IUPAC char */
 static inline char
@@ -60,7 +59,7 @@ normalize_qbase(char c)
         ereport(ERROR,
                 (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
                  errmsg("invalid qkmer base: '%c' (allowed: A,C,G,T,N,R,Y,S,W,K,M,B,D,H,V)", c)));
-        return 'A'; /* unreachable */
+        return 'A';
     }
 }
 
@@ -97,9 +96,9 @@ check_qkmer_consistency(const QKmer *q)
                  errmsg("qkmer value has invalid internal size")));
 }
 
-/* ------------------------------------------------------------------------
+/**
  * Input function: cstring -> qkmer
- * ------------------------------------------------------------------------ */
+ **/
 PG_FUNCTION_INFO_V1(qkmer_in);
 
 Datum qkmer_in(PG_FUNCTION_ARGS)
@@ -133,9 +132,9 @@ Datum qkmer_in(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(q);
 }
 
-/* ------------------------------------------------------------------------
+/**
  * Output function: qkmer -> cstring
- * ------------------------------------------------------------------------ */
+ **/
 PG_FUNCTION_INFO_V1(qkmer_out);
 
 Datum qkmer_out(PG_FUNCTION_ARGS)
@@ -153,9 +152,9 @@ Datum qkmer_out(PG_FUNCTION_ARGS)
     PG_RETURN_CSTRING(res);
 }
 
-/* ------------------------------------------------------------------------
+/**
  * length(qkmer)
- * ------------------------------------------------------------------------ */
+ **/
 PG_FUNCTION_INFO_V1(qkmer_length);
 
 Datum qkmer_length(PG_FUNCTION_ARGS)

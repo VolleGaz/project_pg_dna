@@ -4,6 +4,18 @@
 #include "postgres.h"
 
 /*
+ * Number of bytes needed to store n bases with 2 bits/base.
+ * 4 bases per byte => ceil(n / 4) = (n + 3) / 4.
+ */
+#define DNA_PACKED_BYTES(n)   (((n) + 3) / 4)
+
+/*
+ * Hard limit to avoid absurdly large allocations.
+ * You can adjust this value depending on project constraints.
+ */
+#define DNA_MAX_LENGTH   (100000000U)  /* 1e8 bases */
+
+/*
  * Internal representation of the dna type (varlena).
  *
  * Memory layout:
@@ -21,16 +33,8 @@ typedef struct Dna
     unsigned char data[FLEXIBLE_ARRAY_MEMBER]; /* packed bases */
 } Dna;
 
-/*
- * Number of bytes needed to store n bases with 2 bits/base.
- * 4 bases per byte => ceil(n / 4) = (n + 3) / 4.
- */
-#define DNA_PACKED_BYTES(n)   (((n) + 3) / 4)
 
-/*
- * Hard limit to avoid absurdly large allocations.
- * You can adjust this value depending on project constraints.
- */
-#define DNA_MAX_LENGTH   (100000000U)  /* 1e8 bases */
+
+
 
 #endif /* PG_DNA_DNA_H */

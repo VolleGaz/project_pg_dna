@@ -9,7 +9,7 @@
 
 PG_FUNCTION_INFO_V1(generate_kmers);
 
-/* We call dna_out() from here */
+//We call dna_out() from here
 extern Datum dna_out(PG_FUNCTION_ARGS);
 extern Datum kmer_in(PG_FUNCTION_ARGS);
 
@@ -41,7 +41,7 @@ generate_kmers(PG_FUNCTION_ARGS)
     FuncCallContext     *funcctx;
     GenerateKmersState  *state;
 
-    /* First call: initialize SRF context */
+    // First call: initialize SRF context
     if (SRF_IS_FIRSTCALL())
     {
         MemoryContext oldcontext;
@@ -64,14 +64,14 @@ generate_kmers(PG_FUNCTION_ARGS)
 
         funcctx = SRF_FIRSTCALL_INIT();
 
-        /* Switch to multi-call context so our state survives across calls */
+        // Switch to multi-call context so our state survives across calls
         oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
 
-        /* Convert dna value to cstring using dna_out(dna) */
+        // Convert dna value to cstring using dna_out(dna)
         dna_str = DatumGetCString(DirectFunctionCall1(dna_out,
                                                       PG_GETARG_DATUM(0)));
 
-        /* Copy it into this memory context */
+        // Copy it into this memory context
         dna_copy = pstrdup(dna_str);
         dna_len  = (uint32) strlen(dna_copy);
 
@@ -84,25 +84,25 @@ generate_kmers(PG_FUNCTION_ARGS)
         if (dna_len >= (uint32) k)
             state->max_pos = dna_len - (uint32) k + 1;
         else
-            state->max_pos = 0;      /* no windows */
+            state->max_pos = 0;      // no windows
 
         funcctx->user_fctx = state;
 
         MemoryContextSwitchTo(oldcontext);
     }
 
-    /* Next calls: produce one k-mer per call */
+    // Next calls: produce one k-mer per call
     funcctx = SRF_PERCALL_SETUP();
     state   = (GenerateKmersState *) funcctx->user_fctx;
 
-    /* Done? */
+
     if (state->pos >= state->max_pos)
         SRF_RETURN_DONE(funcctx);
 
-    /* Build k-mer substring as cstring */
+    // Build k-mer substring as cstring
     {
         uint32 start = state->pos;
-        uint32 end   = start + (uint32) state->k;   /* exclusive */
+        uint32 end   = start + (uint32) state->k;   // exclusive
         char  *buf   = (char *) palloc(state->k + 1);
         uint32 i;
 
@@ -111,7 +111,7 @@ generate_kmers(PG_FUNCTION_ARGS)
 
         buf[state->k] = '\0';
 
-        /* Turn substring into a kmer value using the existing kmer_in() */
+        // Turn substring into a kmer value using the existing kmer_in()
         Datum kmer_datum = DirectFunctionCall1(kmer_in, CStringGetDatum(buf));
 
         state->pos++;

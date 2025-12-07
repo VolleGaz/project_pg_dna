@@ -83,9 +83,9 @@ qbase_matches(char q, char base)
     }
 }
 
-/* ------------------------------------------------------------------------
+/**
  * kmer_eq(kmer, kmer) -> boolean
- * ------------------------------------------------------------------------ */
+ **/
 Datum
 kmer_eq(PG_FUNCTION_ARGS)
 {
@@ -109,10 +109,10 @@ kmer_eq(PG_FUNCTION_ARGS)
     PG_RETURN_BOOL(true);
 }
 
-/* ------------------------------------------------------------------------
+/**
  * kmer_starts_with(prefix kmer, value kmer) -> boolean
  * Spec: error if prefix length > value length.
- * ------------------------------------------------------------------------ */
+ **/
 Datum
 kmer_starts_with(PG_FUNCTION_ARGS)
 {
@@ -139,10 +139,10 @@ kmer_starts_with(PG_FUNCTION_ARGS)
     PG_RETURN_BOOL(true);
 }
 
-/* ------------------------------------------------------------------------
+/**
  * qkmer_contains(pattern qkmer, value kmer) -> boolean
  * Spec: error if lengths differ.
- * ------------------------------------------------------------------------ */
+ **/
 Datum
 qkmer_contains(PG_FUNCTION_ARGS)
 {
@@ -162,8 +162,8 @@ qkmer_contains(PG_FUNCTION_ARGS)
 
     for (int i = 0; i < np; i++)
     {
-        char q = pattern->data[i];        /* already uppercase IUPAC */
-        char b = kmer_get_base(value, i); /* A/C/G/T */
+        char q = pattern->data[i];        //already uppercase IUPAC
+        char b = kmer_get_base(value, i); // A/C/G/T 
 
         if (!qbase_matches(q, b))
             PG_RETURN_BOOL(false);
@@ -206,7 +206,7 @@ kmer_cmp(PG_FUNCTION_ARGS)
         if (ba > bb) PG_RETURN_INT32(1);
     }
 
-    /* If all equal so far, shorter one is smaller */
+    // If all equal so far, shorter one is smaller
     if (na < nb) PG_RETURN_INT32(-1);
     if (na > nb) PG_RETURN_INT32(1);
 

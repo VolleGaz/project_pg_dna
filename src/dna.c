@@ -18,9 +18,9 @@ PG_FUNCTION_INFO_V1(dna_out);
 PG_FUNCTION_INFO_V1(dna_length);
 PG_FUNCTION_INFO_V1(dna_get);
 
-/* -------------------------------------------------------------------------
+/**
  * Helpers
- * ------------------------------------------------------------------------- */
+ **/
 
 /*
  * Encode one base (char) into 2 bits (0..3).
@@ -49,7 +49,6 @@ encode_base(char c)
             ereport(ERROR,
                     (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
                      errmsg("invalid DNA base: '%c' (allowed: A,C,G,T only)", c)));
-            /* not reached */
             return 0;
     }
 }
@@ -81,7 +80,7 @@ check_dna_consistency(const Dna *dna)
     uint32 packed_bytes;
     Size min_size;
 
-    size = VARSIZE_ANY(dna);    /* full varlena size */
+    size = VARSIZE_ANY(dna);    // full varlena size
     n = dna->length;
 
     if (n > DNA_MAX_LENGTH)
@@ -103,9 +102,9 @@ check_dna_consistency(const Dna *dna)
     }
 }
 
-/* -------------------------------------------------------------------------
- * Input function: dna_in(cstring) -> dna
- * ------------------------------------------------------------------------- */
+/**
+ * Input function: dna_in(cstring) to dna
+ **/
 
 Datum
 dna_in(PG_FUNCTION_ARGS)
@@ -148,13 +147,13 @@ dna_in(PG_FUNCTION_ARGS)
 
     result = (Dna *) palloc(size);
 
-    /* Set varlena header */
+    // Set varlena header
     SET_VARSIZE(result, size);
 
-    /* Store logical length in bases */
+    // Store logical length in bases
     result->length = n;
 
-    /* Initialize packed bytes to zero */
+    // Initialize packed bytes to zero
     if (packed_bytes > 0)
         memset(result->data, 0, packed_bytes);
 
@@ -182,9 +181,9 @@ dna_in(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(result);
 }
 
-/* -------------------------------------------------------------------------
- * Output function: dna_out(dna) -> cstring
- * ------------------------------------------------------------------------- */
+/**
+ * Output function: dna_out(dna) to cstring
+ **/
 
 Datum
 dna_out(PG_FUNCTION_ARGS)
@@ -195,15 +194,15 @@ dna_out(PG_FUNCTION_ARGS)
     uint32 i;
     char  *buf;
 
-    /*
-     * Obtain a de-toasted, packed representation of the varlena value.
-     * The returned pointer may point to a copied value that we own, or to
-     * a read-only buffer; we must not pfree(dna).
-     */
+    
+     //Obtain a de-toasted, packed representation of the varlena value.
+     //The returned pointer may point to a copied value that we own, or to
+     //a read-only buffer; we must not pfree(dna).
+    
     arg = PG_GETARG_DATUM(0);
     dna = (Dna *) PG_DETOAST_DATUM(arg);
 
-    /* Sanity check on internal structure. */
+    // Sanity check on internal structure.
     check_dna_consistency(dna);
 
     n = dna->length;
@@ -228,9 +227,9 @@ dna_out(PG_FUNCTION_ARGS)
     PG_RETURN_CSTRING(buf);
 }
 
-/* -------------------------------------------------------------------------
- * dna_length(dna) -> integer
- * ------------------------------------------------------------------------- */
+/**
+ * dna_length(dna) to integer
+ **/
 
 Datum
 dna_length(PG_FUNCTION_ARGS)
@@ -246,9 +245,9 @@ dna_length(PG_FUNCTION_ARGS)
     PG_RETURN_INT32((int32) dna->length);
 }
 
-/* -------------------------------------------------------------------------
- * dna_get(dna, integer) -> text (single character)
- * ------------------------------------------------------------------------- */
+/**
+ * dna_get(dna, integer) to text (single character)
+ **/
 
 Datum
 dna_get(PG_FUNCTION_ARGS)
@@ -280,7 +279,7 @@ dna_get(PG_FUNCTION_ARGS)
                         idx, n)));
     }
 
-    /* Convert to 0-based index */
+    // Convert to 0-based index
     i = (uint32) (idx - 1);
 
     byte_index = i / 4;

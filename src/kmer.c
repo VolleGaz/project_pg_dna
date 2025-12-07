@@ -15,9 +15,9 @@ PG_FUNCTION_INFO_V1(kmer_in);
 PG_FUNCTION_INFO_V1(kmer_out);
 PG_FUNCTION_INFO_V1(kmer_length);
 
-/* ------------------------------------------------------------------------
+/**
  * Helpers
- * ------------------------------------------------------------------------ */
+ **/
 
 /* Encode A/C/G/T into 0/1/2/3 */
 static inline unsigned char
@@ -37,7 +37,6 @@ encode_base(char c)
             ereport(ERROR,
                     (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
                      errmsg("invalid kmer base: '%c' (allowed: A,C,G,T only)", c)));
-            /* not reached */
             return 0;
     }
 }
@@ -86,10 +85,9 @@ check_kmer_consistency(const Kmer *k)
                         (size_t) size, n)));
 }
 
-/* ------------------------------------------------------------------------
+/**
  * Input function: cstring → kmer
- * ------------------------------------------------------------------------
- */
+ **/
 Datum
 kmer_in(PG_FUNCTION_ARGS)
 {
@@ -126,7 +124,7 @@ kmer_in(PG_FUNCTION_ARGS)
     SET_VARSIZE(k, size);
     k->length = n;
 
-    /* Pack 4 bases per byte */
+    // Pack 4 bases per byte
     for (int i = 0; i < n; i++)
     {
         unsigned char v = encode_base(input[i]);
@@ -139,10 +137,9 @@ kmer_in(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(k);
 }
 
-/* ------------------------------------------------------------------------
+/**
  * Output function: kmer → cstring
- * ------------------------------------------------------------------------
- */
+ **/
 Datum
 kmer_out(PG_FUNCTION_ARGS)
 {
@@ -150,11 +147,11 @@ kmer_out(PG_FUNCTION_ARGS)
     int   n;
     char *res;
 
-    /*
-     * Use PG_DETOAST_DATUM to force a 4-byte header representation.
-     * Small values may be stored with a 1-byte varlena header, which would
-     * misalign the length field in our struct.
-     */
+    
+     //Use PG_DETOAST_DATUM to force a 4-byte header representation.
+     //Small values may be stored with a 1-byte varlena header, which would
+     //misalign the length field in our struct.
+     
     k = (Kmer *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
     check_kmer_consistency(k);
 
@@ -173,10 +170,9 @@ kmer_out(PG_FUNCTION_ARGS)
     PG_RETURN_CSTRING(res);
 }
 
-/* ------------------------------------------------------------------------
+/**
  * length(kmer)
- * ------------------------------------------------------------------------
- */
+ **/
 Datum
 kmer_length(PG_FUNCTION_ARGS)
 {

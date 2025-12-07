@@ -8,7 +8,7 @@
 typedef struct QKmer
 {
     int32 vl_len_;
-    char data[FLEXIBLE_ARRAY_MEMBER]; /* stored as uppercase IUPAC chars */
+    char data[FLEXIBLE_ARRAY_MEMBER]; // stored as uppercase IUPAC chars 
 } QKmer;
 
-#endif /* QKMER_H */
+#endif // QKMER_H

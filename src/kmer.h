@@ -19,7 +19,7 @@
 typedef struct Kmer
 {
     int32 vl_len_;
-    int32 length;                  /* logical length in bases */
+    int32 length;                  // logical length in bases
     unsigned char data[FLEXIBLE_ARRAY_MEMBER];
 } Kmer;
 
