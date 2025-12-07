@@ -1,5 +1,5 @@
 MODULE_big = pg_dna
-OBJS = src/pg_dna.o src/dna.o src/kmer.o src/qkmer.o src/funcs.o src/ops_kmer.o src/hash_btree_kmer.o src/spgist_kmer.o
+OBJS = src/dna.o src/kmer.o src/qkmer.o src/funcs.o src/ops_kmer.o src/hash_btree_kmer.o src/spgist_kmer.o
 
 EXTENSION = pg_dna
 DATA = sql/pg_dna--1.0.sql

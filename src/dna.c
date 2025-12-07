@@ -11,10 +11,7 @@
 #include <ctype.h>
 #include <string.h>
 
-/*
- * IMPORTANT:
- * PG_MODULE_MAGIC is defined in pg_dna.c, not here.
- */
+PG_MODULE_MAGIC;
 
 PG_FUNCTION_INFO_V1(dna_in);
 PG_FUNCTION_INFO_V1(dna_out);

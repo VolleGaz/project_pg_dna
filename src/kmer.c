@@ -10,10 +10,6 @@
 #include <ctype.h>
 #include <string.h>
 
-/*
- * IMPORTANT:
- * PG_MODULE_MAGIC is in pg_dna.c, not here.
- */
 
 PG_FUNCTION_INFO_V1(kmer_in);
 PG_FUNCTION_INFO_V1(kmer_out);
