@@ -5,6 +5,8 @@
 
 PG_FUNCTION_INFO_V1(kmer_hash);
 
+//Function that defines hashing of dna for grouping. Uses hash_bytes from postgres
+
 Datum
 kmer_hash(PG_FUNCTION_ARGS)
 {

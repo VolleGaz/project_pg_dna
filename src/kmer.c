@@ -15,11 +15,8 @@ PG_FUNCTION_INFO_V1(kmer_in);
 PG_FUNCTION_INFO_V1(kmer_out);
 PG_FUNCTION_INFO_V1(kmer_length);
 
-/**
- * Helpers
- **/
 
-/* Encode A/C/G/T into 0/1/2/3 */
+// Encode A/C/G/T into 0/1/2/3 
 static inline unsigned char
 encode_base(char c)
 {
@@ -41,7 +38,7 @@ encode_base(char c)
     }
 }
 
-/* Decode 0/1/2/3 back to A/C/G/T */
+// Decode 0/1/2/3 back to A/C/G/T 
 static inline char
 decode_base(unsigned char x)
 {
@@ -49,14 +46,14 @@ decode_base(unsigned char x)
     return table[x & 3];
 }
 
-/* Compute logical number of bases stored in this kmer */
+// Compute logical number of bases stored in this kmer
 static inline int
 kmer_length_internal(const Kmer *k)
 {
     return k->length;
 }
 
-/* Ensure internal consistency (length <= 32, size matches packed length) */
+// Ensure internal consistency (length <= 32, size matches packed length) 
 static void
 check_kmer_consistency(const Kmer *k)
 {
@@ -85,9 +82,9 @@ check_kmer_consistency(const Kmer *k)
                         (size_t) size, n)));
 }
 
-/**
- * Input function: cstring → kmer
- **/
+
+//Input function: cstring -> kmer
+
 Datum
 kmer_in(PG_FUNCTION_ARGS)
 {
@@ -137,9 +134,8 @@ kmer_in(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(k);
 }
 
-/**
- * Output function: kmer → cstring
- **/
+
+//Output function: kmer -> cstring
 Datum
 kmer_out(PG_FUNCTION_ARGS)
 {
@@ -170,9 +166,7 @@ kmer_out(PG_FUNCTION_ARGS)
     PG_RETURN_CSTRING(res);
 }
 
-/**
- * length(kmer)
- **/
+
 Datum
 kmer_length(PG_FUNCTION_ARGS)
 {

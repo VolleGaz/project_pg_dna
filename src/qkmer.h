@@ -11,4 +11,4 @@ typedef struct QKmer
     char data[FLEXIBLE_ARRAY_MEMBER]; // stored as uppercase IUPAC chars 
 } QKmer;
 
-#endif // QKMER_H
+#endif 

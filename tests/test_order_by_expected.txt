@@ -1,0 +1,31 @@
+Test ORDER BY count DESC, kmer ASC (ACGTACGT, k=3)
+
+ kmer | cnt 
+------+-----
+ ACG  |   2
+ CGT  |   2
+ GTA  |   1
+ TAC  |   1
+(4 rows)
+
+Test ORDER BY kmer ASC (VALUES)
+
+ kmer  
+-------
+ ACG
+ ACGTA
+ ACGTC
+ ACGTT
+ ACT
+(5 rows)
+
+Test ORDER BY kmer DESC (VALUES)
+
+ kmer  
+-------
+ ACT
+ ACGTT
+ ACGTC
+ ACGTA
+ ACG
+(5 rows)

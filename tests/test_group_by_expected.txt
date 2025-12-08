@@ -1,0 +1,22 @@
+Test group by, single sequence (AAAAA, k=3)
+
+ kmer | cnt 
+------+-----
+ AAA  |   3
+(1 row)
+
+Test group by counts summary (ACGTACGT, k=3)
+ total_count | distinct_count | unique_count 
+
+-------------+----------------+--------------
+           6 |              4 |            2
+(1 row)
+
+Test group by with distinct counts (manual VALUES)
+
+ kmer | cnt 
+------+-----
+ AAA  |   1
+ CCC  |   2
+ GGG  |   3
+(3 rows)

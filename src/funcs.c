@@ -9,31 +9,26 @@
 
 PG_FUNCTION_INFO_V1(generate_kmers);
 
-//We call dna_out() from here
 extern Datum dna_out(PG_FUNCTION_ARGS);
 extern Datum kmer_in(PG_FUNCTION_ARGS);
 
-/*
- * State carried across calls for the set-returning function
- */
+//State carried across calls for the set-returning function
+
 typedef struct GenerateKmersState
 {
-    char   *dna_str;   /* plain C string representation of the DNA sequence */
-    uint32  dna_len;   /* length in characters (A/C/G/T) */
-    int32   k;         /* window size */
-    uint32  pos;       /* current start index (0-based) */
-    uint32  max_pos;   /* number of windows = dna_len - k + 1 */
+    char   *dna_str;   // plain C string representation of the DNA sequence 
+    uint32  dna_len;   // length in characters (A/C/G/T) 
+    int32   k;         // window size 
+    uint32  pos;       // current start index (0-based) 
+    uint32  max_pos;   // number of windows = dna_len - k + 1 
 } GenerateKmersState;
 
 /*
- * generate_kmers(dna, k) → SETOF kmer
- *
- * Implementation strategy:
  *  - call dna_out(dna) to get a C string like "ACGTAC..."
  *  - slide a window of length k over that string
- *  - for each window, build a kmer by calling kmer_in(...)
+ *  - for each window, build a kmer by calling kmer_in()
  *
- * This way we never depend on the internal representation of dna.
+ *   This way we never depend on the internal representation of dna.
  */
 Datum
 generate_kmers(PG_FUNCTION_ARGS)
@@ -41,7 +36,6 @@ generate_kmers(PG_FUNCTION_ARGS)
     FuncCallContext     *funcctx;
     GenerateKmersState  *state;
 
-    // First call: initialize SRF context
     if (SRF_IS_FIRSTCALL())
     {
         MemoryContext oldcontext;

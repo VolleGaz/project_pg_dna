@@ -1,13 +1,10 @@
--- ============================================================
 -- Tests for generate_kmers(dna, k)
--- ============================================================
 
 SET client_min_messages = WARNING;
 
 DROP EXTENSION IF EXISTS pg_dna CASCADE;
 CREATE EXTENSION pg_dna;
 
----------------------------------------------------------------
 SELECT '--- basic windows ---' AS section;
 
 DO $$
@@ -23,7 +20,6 @@ BEGIN
 END;
 $$;
 
----------------------------------------------------------------
 SELECT '--- exact length ---' AS section;
 
 DO $$
@@ -39,7 +35,6 @@ BEGIN
 END;
 $$;
 
----------------------------------------------------------------
 SELECT '--- shorter than k ---' AS section;
 
 DO $$
@@ -55,7 +50,6 @@ BEGIN
 END;
 $$;
 
----------------------------------------------------------------
 SELECT '--- error cases ---' AS section;
 
 DO $$
@@ -80,5 +74,5 @@ BEGIN
 END;
 $$;
 
----------------------------------------------------------------
+
 SELECT '--- DONE ---' AS section;

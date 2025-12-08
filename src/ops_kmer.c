@@ -20,7 +20,7 @@ PG_FUNCTION_INFO_V1(kmer_cmp);
 
 
 
-/* qkmer helpers: length and consistency (same as qkmer.c logic) */
+// qkmer helpers: length and consistency (same as qkmer.c logic)
 static inline int
 qkmer_length_internal(const QKmer *q)
 {
@@ -52,7 +52,7 @@ check_qkmer_consistency_ops(const QKmer *q)
                  errmsg("qkmer value has invalid internal size")));
 }
 
-/* Does a single qkmer code match a concrete base A/C/G/T ? */
+// Does a single qkmer code match a concrete base A/C/G/T ? 
 static inline bool
 qbase_matches(char q, char base)
 {
@@ -70,10 +70,10 @@ qbase_matches(char q, char base)
         case 'W': return (base == 'A' || base == 'T');
         case 'K': return (base == 'G' || base == 'T');
         case 'M': return (base == 'A' || base == 'C');
-        case 'B': return (base == 'C' || base == 'G' || base == 'T');      /* not A */
-        case 'D': return (base == 'A' || base == 'G' || base == 'T');      /* not C */
-        case 'H': return (base == 'A' || base == 'C' || base == 'T');      /* not G */
-        case 'V': return (base == 'A' || base == 'C' || base == 'G');      /* not T */
+        case 'B': return (base == 'C' || base == 'G' || base == 'T');      // not A 
+        case 'D': return (base == 'A' || base == 'G' || base == 'T');      // not C 
+        case 'H': return (base == 'A' || base == 'C' || base == 'T');      // not G 
+        case 'V': return (base == 'A' || base == 'C' || base == 'G');      // not T 
 
         default:
             ereport(ERROR,
@@ -83,9 +83,7 @@ qbase_matches(char q, char base)
     }
 }
 
-/**
- * kmer_eq(kmer, kmer) -> boolean
- **/
+
 Datum
 kmer_eq(PG_FUNCTION_ARGS)
 {
@@ -109,10 +107,7 @@ kmer_eq(PG_FUNCTION_ARGS)
     PG_RETURN_BOOL(true);
 }
 
-/**
- * kmer_starts_with(prefix kmer, value kmer) -> boolean
- * Spec: error if prefix length > value length.
- **/
+
 Datum
 kmer_starts_with(PG_FUNCTION_ARGS)
 {
@@ -139,10 +134,7 @@ kmer_starts_with(PG_FUNCTION_ARGS)
     PG_RETURN_BOOL(true);
 }
 
-/**
- * qkmer_contains(pattern qkmer, value kmer) -> boolean
- * Spec: error if lengths differ.
- **/
+
 Datum
 qkmer_contains(PG_FUNCTION_ARGS)
 {

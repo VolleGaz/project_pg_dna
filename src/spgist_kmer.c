@@ -12,9 +12,7 @@
 
 #define KMER_QKMER_CONTAINS_STRATEGY 10
 #define KMER_PREFIX_CONTAINS_STRATEGY 28
-/**
-* implementation of the generic spgist functions
-**/
+//implementation of the generic spgist functions
 
 PG_FUNCTION_INFO_V1(spg_kmer_config);
 PG_FUNCTION_INFO_V1(spg_kmer_choose);
@@ -41,10 +39,9 @@ spg_kmer_config(PG_FUNCTION_ARGS)
     PG_RETURN_VOID();
 }
 
-/**
-* helper function to guide a the child explorations
-* that is what makes the use of labels unnecessary
-**/
+
+//helper function to guide a the child explorations that is what makes the use of labels unnecessary
+
 static inline int
 kmer_node_for_level(const Kmer *k, int level)
 {
@@ -82,7 +79,7 @@ spg_kmer_choose(PG_FUNCTION_ARGS)
     if (in->nNodes > 0 && nodeN >= in->nNodes) // avoid accessing an index that dosen't exist
         nodeN = in->nNodes - 1;
 
-    /* We match an existing node */
+    // We match an existing node
     out->resultType = spgMatchNode;
 
     out->result.matchNode.nodeN     = nodeN;
@@ -261,7 +258,7 @@ spg_kmer_inner_consistent(PG_FUNCTION_ARGS)
         out->nNodes = nVisit;
     }
 
-     //préfixe k starts_with prefix ^@ operator
+     //prefic k starts_with prefix ^@ operator
     // less agressive pruning due to the fact that we have to return a set with multiple branches
     else if (strategy == KMER_PREFIX_CONTAINS_STRATEGY	)
     {
@@ -301,7 +298,7 @@ spg_kmer_inner_consistent(PG_FUNCTION_ARGS)
     	int    level;
     	int    i;
 
-   		 /* 1) Récupérer le qkmer de la requête */
+   		 //get kmer of the request
    		pattern = (QKmer *) PG_DETOAST_DATUM(key->sk_argument);
     	plen    = qkmer_length_internal_spg(pattern);
     	level   = in->level;
@@ -381,7 +378,6 @@ kmer_equal_internal(const Kmer *a, const Kmer *b)
     return true;
 }
 
-//helper
 static bool
 kmer_starts_with_internal(const Kmer *prefix, const Kmer *value)
 {

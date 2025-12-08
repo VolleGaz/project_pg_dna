@@ -18,13 +18,10 @@ PG_FUNCTION_INFO_V1(dna_out);
 PG_FUNCTION_INFO_V1(dna_length);
 PG_FUNCTION_INFO_V1(dna_get);
 
-/**
- * Helpers
- **/
 
 /*
  * Encode one base (char) into 2 bits (0..3).
- * Accepts both upper- and lowercase A/C/G/T.
+ * Accepts both upper and lowercase A/C/G/T.
  * Raises a PostgreSQL ERROR on invalid character.
  */
 static unsigned char
@@ -70,7 +67,7 @@ decode_base(unsigned char b)
  * Check that the internal varlena value is consistent:
  *  - size is large enough to contain header + length + packed data
  *  - length is not absurdly large
- * Raises ERROR if something looks corrupted (e.g. malformed toast value).
+ * Raises ERROR if something looks corrupted 
  */
 static void
 check_dna_consistency(const Dna *dna)
@@ -102,9 +99,9 @@ check_dna_consistency(const Dna *dna)
     }
 }
 
-/**
- * Input function: dna_in(cstring) to dna
- **/
+
+//Input function: dna_in(cstring) to dna
+
 
 Datum
 dna_in(PG_FUNCTION_ARGS)
@@ -131,11 +128,11 @@ dna_in(PG_FUNCTION_ARGS)
     n = (uint32) input_len;
     packed_bytes = DNA_PACKED_BYTES(n);
 
-    /*
-     * Compute total size of the varlena structure.
-     * We use offsetof(Dna, data) to get the offset of the data[] field,
-     * then add the number of packed bytes.
-     */
+
+     //Compute total size of the varlena structure.
+     //We use offsetof(Dna, data) to get the offset of the data[] field,
+     //then add the number of packed bytes.
+
     size = offsetof(Dna, data) + packed_bytes;
 
     if (size > MaxAllocSize)
@@ -181,9 +178,9 @@ dna_in(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(result);
 }
 
-/**
- * Output function: dna_out(dna) to cstring
- **/
+
+//Output function: dna_out(dna) to cstring
+
 
 Datum
 dna_out(PG_FUNCTION_ARGS)
@@ -227,9 +224,9 @@ dna_out(PG_FUNCTION_ARGS)
     PG_RETURN_CSTRING(buf);
 }
 
-/**
- * dna_length(dna) to integer
- **/
+
+//dna_length(dna) to integer
+
 
 Datum
 dna_length(PG_FUNCTION_ARGS)
@@ -245,9 +242,9 @@ dna_length(PG_FUNCTION_ARGS)
     PG_RETURN_INT32((int32) dna->length);
 }
 
-/**
- * dna_get(dna, integer) to text (single character)
- **/
+
+//dna_get(dna, integer) to text (single character)
+
 
 Datum
 dna_get(PG_FUNCTION_ARGS)

@@ -3,15 +3,12 @@
 
 #include "postgres.h"
 
-/* Max allowed kmer length */
 #define KMER_MAX_LENGTH 32
 
-/* Number of packed bytes needed for n characters (4 bases per byte) */
+// Number of packed bytes needed for n characters (4 bases per byte)
 #define KMER_PACKED_BYTES(n) (((n) + 3) / 4)
 
 /*
- * Varlen header + logical length in bases + packed data.
- *
  *   vl_len_ : standard PostgreSQL varlena length header
  *   length  : number of bases (1..32)
  *   data[]  : packed bases, 4 per byte (2 bits each)
@@ -29,4 +26,4 @@ extern Datum kmer_out(PG_FUNCTION_ARGS);
 extern Datum kmer_length(PG_FUNCTION_ARGS);
 extern char kmer_get_base(const Kmer *k, int i);
 
-#endif /* KMER_H */
+#endif 
