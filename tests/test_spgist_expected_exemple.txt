@@ -1,0 +1,132 @@
+psql:tests/test_spgist_big.sql:1: NOTICE:  drop cascades to column kmer_value of table test_kmers
+DROP EXTENSION
+CREATE EXTENSION
+SET
+SET
+SET
+DROP TABLE
+CREATE TABLE
+insertion de 5 000 000 kmers random (len=10)
+INSERT 0 5000000
+creation index spgist sur kmer_value...
+psql:tests/test_spgist_big.sql:33: NOTICE:  index "idx_kmer_spgist" does not exist, skipping
+DROP INDEX
+CREATE INDEX
+ANALYZE
+==== test 1 : egalite (=) ultra selective ====
+valeur testee : AAAAAAAAAA
+SET
+SET
+SET
+--- test 1A : = avec seqscan only ---
+                                                QUERY PLAN                                                 
+-----------------------------------------------------------------------------------------------------------
+ Seq Scan on test_kmers  (cost=0.00..89528.00 rows=6 width=12) (actual time=3.067..389.784 rows=9 loops=1)
+   Filter: (kmer_value = 'AAAAAAAAAA'::kmer)
+   Rows Removed by Filter: 4999991
+ Planning Time: 0.088 ms
+ Execution Time: 389.809 ms
+(5 rows)
+
+SET
+SET
+SET
+--- test 1B : = avec index spgist only ---
+psql:tests/test_spgist_big.sql:60: WARNING:  inner_consistent called: level=0, nNodes=5, nkeys=1
+psql:tests/test_spgist_big.sql:60: WARNING:  inner_consistent called: level=1, nNodes=5, nkeys=1
+psql:tests/test_spgist_big.sql:60: WARNING:  inner_consistent called: level=2, nNodes=5, nkeys=1
+psql:tests/test_spgist_big.sql:60: WARNING:  inner_consistent called: level=3, nNodes=5, nkeys=1
+psql:tests/test_spgist_big.sql:60: WARNING:  inner_consistent called: level=4, nNodes=5, nkeys=1
+psql:tests/test_spgist_big.sql:60: WARNING:  inner_consistent called: level=5, nNodes=5, nkeys=1
+psql:tests/test_spgist_big.sql:60: WARNING:  inner_consistent called: level=6, nNodes=5, nkeys=1
+psql:tests/test_spgist_big.sql:60: WARNING:  inner_consistent called: level=7, nNodes=5, nkeys=1
+                                                          QUERY PLAN                                                          
+------------------------------------------------------------------------------------------------------------------------------
+ Index Scan using idx_kmer_spgist on test_kmers  (cost=0.41..28.52 rows=6 width=12) (actual time=0.073..0.093 rows=9 loops=1)
+   Index Cond: (kmer_value = 'AAAAAAAAAA'::kmer)
+ Planning Time: 0.037 ms
+ Execution Time: 0.101 ms
+(4 rows)
+
+==== test 2 : prefix (^@) tres selectif ====
+prefix utilise : AAAAAAAC (8 chars)
+SET
+SET
+SET
+--- test 2A : ^@ avec seqscan only ---
+                                                    QUERY PLAN                                                    
+------------------------------------------------------------------------------------------------------------------
+ Seq Scan on test_kmers  (cost=0.00..89528.00 rows=2500000 width=12) (actual time=1.152..382.332 rows=66 loops=1)
+   Filter: (kmer_value ^@ 'AAAAAAAC'::kmer)
+   Rows Removed by Filter: 4999934
+ Planning Time: 0.025 ms
+ Execution Time: 382.354 ms
+(5 rows)
+
+SET
+SET
+SET
+--- test 2B : ^@ avec index spgist only ---
+psql:tests/test_spgist_big.sql:84: WARNING:  inner_consistent called: level=0, nNodes=5, nkeys=1
+psql:tests/test_spgist_big.sql:84: WARNING:  inner_consistent called: level=1, nNodes=5, nkeys=1
+psql:tests/test_spgist_big.sql:84: WARNING:  inner_consistent called: level=2, nNodes=5, nkeys=1
+psql:tests/test_spgist_big.sql:84: WARNING:  inner_consistent called: level=3, nNodes=5, nkeys=1
+psql:tests/test_spgist_big.sql:84: WARNING:  inner_consistent called: level=4, nNodes=5, nkeys=1
+psql:tests/test_spgist_big.sql:84: WARNING:  inner_consistent called: level=5, nNodes=5, nkeys=1
+psql:tests/test_spgist_big.sql:84: WARNING:  inner_consistent called: level=6, nNodes=5, nkeys=1
+psql:tests/test_spgist_big.sql:84: WARNING:  inner_consistent called: level=7, nNodes=5, nkeys=1
+                                                               QUERY PLAN                                                                
+-----------------------------------------------------------------------------------------------------------------------------------------
+ Index Scan using idx_kmer_spgist on test_kmers  (cost=0.41..194550.42 rows=2500000 width=12) (actual time=0.055..0.211 rows=66 loops=1)
+   Index Cond: (kmer_value ^@ 'AAAAAAAC'::kmer)
+ Planning Time: 0.042 ms
+ JIT:
+   Functions: 2
+   Options: Inlining false, Optimization false, Expressions true, Deforming true
+   Timing: Generation 0.140 ms, Inlining 0.000 ms, Optimization 0.000 ms, Emission 0.000 ms, Total 0.140 ms
+ Execution Time: 0.426 ms
+(8 rows)
+
+==== test 3 : pattern (<@) tres selectif ====
+pattern utilise : AAAA AAACNN (qkmer)
+SET
+SET
+SET
+--- test 3A : <@ avec seqscan only ---
+                                                    QUERY PLAN                                                    
+------------------------------------------------------------------------------------------------------------------
+ Seq Scan on test_kmers  (cost=0.00..89528.00 rows=2500000 width=12) (actual time=1.165..399.966 rows=66 loops=1)
+   Filter: (kmer_value <@ 'AAAAAAACNN'::qkmer)
+   Rows Removed by Filter: 4999934
+ Planning Time: 0.022 ms
+ Execution Time: 399.986 ms
+(5 rows)
+
+SET
+SET
+SET
+--- test 3B : <@ avec index spgist only ---
+psql:tests/test_spgist_big.sql:108: WARNING:  inner_consistent called: level=0, nNodes=5, nkeys=1
+psql:tests/test_spgist_big.sql:108: WARNING:  inner_consistent called: level=1, nNodes=5, nkeys=1
+psql:tests/test_spgist_big.sql:108: WARNING:  inner_consistent called: level=2, nNodes=5, nkeys=1
+psql:tests/test_spgist_big.sql:108: WARNING:  inner_consistent called: level=3, nNodes=5, nkeys=1
+psql:tests/test_spgist_big.sql:108: WARNING:  inner_consistent called: level=4, nNodes=5, nkeys=1
+psql:tests/test_spgist_big.sql:108: WARNING:  inner_consistent called: level=5, nNodes=5, nkeys=1
+psql:tests/test_spgist_big.sql:108: WARNING:  inner_consistent called: level=6, nNodes=5, nkeys=1
+psql:tests/test_spgist_big.sql:108: WARNING:  inner_consistent called: level=7, nNodes=5, nkeys=1
+                                                               QUERY PLAN                                                                
+-----------------------------------------------------------------------------------------------------------------------------------------
+ Index Scan using idx_kmer_spgist on test_kmers  (cost=0.41..194550.42 rows=2500000 width=12) (actual time=0.048..0.100 rows=66 loops=1)
+   Index Cond: (kmer_value <@ 'AAAAAAACNN'::qkmer)
+ Planning Time: 0.040 ms
+ JIT:
+   Functions: 2
+   Options: Inlining false, Optimization false, Expressions true, Deforming true
+   Timing: Generation 0.131 ms, Inlining 0.000 ms, Optimization 0.000 ms, Emission 0.000 ms, Total 0.131 ms
+ Execution Time: 0.271 ms
+(8 rows)
+
+RESET
+RESET
+RESET
+-- fin du gros test spgist
