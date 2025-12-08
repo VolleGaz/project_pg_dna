@@ -30,6 +30,17 @@
  f
 (1 row)
 
+--- Operator literal casting ---
+ ?column? 
+----------
+ t
+(1 row)
+
+ ?column? 
+----------
+ t
+(1 row)
+
 psql:test_qkmer.sql:25: ERROR:  qkmer cannot be empty
 LINE 1: SELECT ''::qkmer;
                ^

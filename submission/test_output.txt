@@ -44,6 +44,11 @@ CREATE EXTENSION
  t             | f
 (1 row)
 
+ literal_match | literal_no_match 
+---------------+------------------
+ t             | t
+(1 row)
+
 --- generate_kmers SRF ---
        kmers       
 -------------------

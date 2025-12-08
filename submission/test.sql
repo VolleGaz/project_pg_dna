@@ -23,6 +23,8 @@ SELECT 'nryswkmbdhv'::qkmer AS qkmer_codes;
 SELECT length('NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN'::qkmer) AS qlen_max;
 SELECT contains('AN'::qkmer, 'AC'::kmer) AS contains_true,
        contains('AN'::qkmer, 'GT'::kmer) AS contains_false;
+SELECT 'ANGTA' @> 'ATGTA'::kmer AS literal_match,
+       'ANGTA' @> 'ACGTA'::kmer AS literal_no_match;
 
 \echo '--- generate_kmers SRF ---'
 SELECT array_agg(kmer::text ORDER BY kmer) AS kmers
