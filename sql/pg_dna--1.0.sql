@@ -71,6 +71,19 @@ CREATE FUNCTION kmer_starts_with(kmer, kmer) RETURNS boolean AS 'pg_dna',
 'kmer_starts_with' LANGUAGE C IMMUTABLE STRICT;
 CREATE FUNCTION qkmer_contains(qkmer, kmer) RETURNS boolean AS 'pg_dna',
 'qkmer_contains' LANGUAGE C IMMUTABLE STRICT;
+
+-- Assignment-friendly aliases (argument order matches the project PDF)
+CREATE FUNCTION equals(kmer, kmer) RETURNS boolean AS 'pg_dna',
+'kmer_eq' LANGUAGE C IMMUTABLE STRICT;
+
+-- PDF uses starts_with(prefix, value); internal function expects (value, prefix)
+CREATE FUNCTION starts_with(kmer, kmer) RETURNS boolean AS $$
+    SELECT kmer_starts_with($2, $1);
+$$ LANGUAGE SQL IMMUTABLE STRICT;
+
+CREATE FUNCTION contains(qkmer, kmer) RETURNS boolean AS $$
+    SELECT qkmer_contains($1, $2);
+$$ LANGUAGE SQL IMMUTABLE STRICT;
 -- generate_kmers(dna, k) -> SETOF kmer
 CREATE FUNCTION generate_kmers(dna, integer)
 RETURNS SETOF kmer AS 'pg_dna', 'generate_kmers'

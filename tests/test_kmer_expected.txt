@@ -6,6 +6,12 @@ ACGT
 4
 32
 
+--- Aliases ---
+t
+f
+t
+f
+
 --- Errors ---
 ERROR:  kmer length 40 exceeds maximum 32
 ERROR:  invalid kmer base: 'X' (allowed: A,C,G,T only)

@@ -99,6 +99,7 @@ generate_kmers(PG_FUNCTION_ARGS)
         uint32 end   = start + (uint32) state->k;   // exclusive
         char  *buf   = (char *) palloc(state->k + 1);
         uint32 i;
+        Datum  kmer_datum;
 
         for (i = start; i < end; i++)
             buf[i - start] = state->dna_str[i];
@@ -106,7 +107,7 @@ generate_kmers(PG_FUNCTION_ARGS)
         buf[state->k] = '\0';
 
         // Turn substring into a kmer value using the existing kmer_in()
-        Datum kmer_datum = DirectFunctionCall1(kmer_in, CStringGetDatum(buf));
+        kmer_datum = DirectFunctionCall1(kmer_in, CStringGetDatum(buf));
 
         state->pos++;
 

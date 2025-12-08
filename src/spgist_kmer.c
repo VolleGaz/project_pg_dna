@@ -1,12 +1,14 @@
 #include "postgres.h"
 #include "fmgr.h"
+#if PG_VERSION_NUM >= 160000
+#include "varatt.h"
+#endif
 #include "access/spgist.h"
 #include "access/stratnum.h"
 #include "utils/builtins.h"
 #include "catalog/pg_type.h"
 #include "utils/varlena.h"
 #include "access/spgist.h"
-#include "varatt.h"
 #include "kmer.h"
 #include "qkmer.h"
 
@@ -27,6 +29,9 @@ spg_kmer_config(PG_FUNCTION_ARGS)
     spgConfigIn  *cfgin = (spgConfigIn *) PG_GETARG_POINTER(0);
     spgConfigOut *cfg   = (spgConfigOut *) PG_GETARG_POINTER(1);
 
+    /* suppress unused warning; nothing needed from cfgin currently */
+    (void) cfgin;
+
     cfg->prefixType = VOIDOID;//empty
     cfg->labelType = VOIDOID; // detrminist so we don't need labels see helper function bellow
 
@@ -45,9 +50,12 @@ spg_kmer_config(PG_FUNCTION_ARGS)
 static inline int
 kmer_node_for_level(const Kmer *k, int level)
 {
+    char c;
+
     if (level >= k->length)
         return 4;  // end
-    char c = kmer_get_base(k, level);
+
+    c = kmer_get_base(k, level);
     // based on this char we now wich child to explore
     switch (c)
     {
@@ -197,10 +205,12 @@ spg_kmer_inner_consistent(PG_FUNCTION_ARGS)
 {
     spgInnerConsistentIn  *in  = (spgInnerConsistentIn *) PG_GETARG_POINTER(0);
     spgInnerConsistentOut *out = (spgInnerConsistentOut *) PG_GETARG_POINTER(1);
+    int nVisit = 0;
+    ScanKey        key;
+    StrategyNumber strategy;
+
     elog(WARNING, "inner_consistent called: level=%d, nNodes=%d, nkeys=%d",
          in->level, in->nNodes, in->nkeys);
-    
-    int nVisit = 0;
 
     // not used
     out->reconstructedValues = NULL;
@@ -227,16 +237,17 @@ spg_kmer_inner_consistent(PG_FUNCTION_ARGS)
     //  we just prune using the first cond key : WHERE <cond1> AND <cond2>. to guide the pruning
     // (can be optimized to prune more)
     // with = we prune more agresively because there is only one possible path at each level
-    ScanKey        key      = &in->scankeys[0];
-    StrategyNumber strategy = key->sk_strategy; // get the strategy number of the operator
+    key      = &in->scankeys[0];
+    strategy = key->sk_strategy; // get the strategy number of the operator
 
      //strat k = query_kmer (handle WHERE k = ...) type of queries
     if (strategy == BTEqualStrategyNumber) // if operator is =
     {
         Kmer *q = (Kmer *) PG_DETOAST_DATUM(key->sk_argument);
-        int   qlen = q->length;
-
+        int   qlen;
         int nodeN;
+
+        qlen = q->length;
 
         if (in->level < qlen)
         {
@@ -263,7 +274,9 @@ spg_kmer_inner_consistent(PG_FUNCTION_ARGS)
     else if (strategy == KMER_PREFIX_CONTAINS_STRATEGY	)
     {
         Kmer *prefix = (Kmer *) PG_DETOAST_DATUM(key->sk_argument);
-        int   plen   = prefix->length;
+        int   plen;
+
+        plen = prefix->length;
 
         if (in->level < plen)
         {
@@ -293,15 +306,15 @@ spg_kmer_inner_consistent(PG_FUNCTION_ARGS)
     // qkmer
 	else if (strategy == KMER_QKMER_CONTAINS_STRATEGY)
 	{
-    	QKmer *pattern;
-    	int    plen;
-    	int    level;
-    	int    i;
+	QKmer *pattern;
+	int    plen;
+	int    level;
+	int    i;
 
    		 //get kmer of the request
-   		pattern = (QKmer *) PG_DETOAST_DATUM(key->sk_argument);
-    	plen    = qkmer_length_internal_spg(pattern);
-    	level   = in->level;
+		pattern = (QKmer *) PG_DETOAST_DATUM(key->sk_argument);
+	    plen    = qkmer_length_internal_spg(pattern);
+	    level   = in->level;
 
 
     	if (level >= plen)
@@ -407,6 +420,7 @@ spg_kmer_leaf_consistent(PG_FUNCTION_ARGS)
 
     bool res = true;
     int  i;
+    Kmer *leaf;
 
     //leaf value
     out->leafValue        = in->leafDatum;
@@ -418,7 +432,7 @@ spg_kmer_leaf_consistent(PG_FUNCTION_ARGS)
         PG_RETURN_BOOL(true);
 
     //kmer of the leaf
-    Kmer *leaf = (Kmer *) PG_DETOAST_DATUM(in->leafDatum);
+    leaf = (Kmer *) PG_DETOAST_DATUM(in->leafDatum);
 
     for (i = 0; i < in->nkeys; i++)
     {
@@ -488,4 +502,3 @@ spg_kmer_leaf_consistent(PG_FUNCTION_ARGS)
 
     PG_RETURN_BOOL(res);
 }
-

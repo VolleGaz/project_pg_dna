@@ -1,0 +1,69 @@
+SET
+DROP EXTENSION
+CREATE EXTENSION
+--- dna I/O and length ---
+ dna_value | out_value 
+-----------+-----------
+ ACGT      | ACGT
+(1 row)
+
+ length 
+--------
+      8
+(1 row)
+
+--- kmer I/O, length, aliases ---
+ kmer_value | kmer_lower 
+------------+------------
+ ACGT       | ACGT
+(1 row)
+
+ len_short | len_max 
+-----------+---------
+         2 |      32
+(1 row)
+
+ eq_true | eq_false | prefix_true | prefix_false 
+---------+----------+-------------+--------------
+ t       | f        | t           | f
+(1 row)
+
+--- qkmer I/O, length, contains alias ---
+ qkmer_codes 
+-------------
+ NRYSWKMBDHV
+(1 row)
+
+ qlen_max 
+----------
+       32
+(1 row)
+
+ contains_true | contains_false 
+---------------+----------------
+ t             | f
+(1 row)
+
+--- generate_kmers SRF ---
+       kmers       
+-------------------
+ {ACG,CGT,GTA,TAC}
+(1 row)
+
+--- GROUP BY / counts ---
+ total_count | distinct_count | unique_count 
+-------------+----------------+--------------
+           6 |              4 |            2
+(1 row)
+
+--- ORDER BY (btree ops) ---
+ kmer  
+-------
+ ACG
+ ACGTA
+ ACGTC
+ ACGTT
+ ACT
+(5 rows)
+
+--- Done ---

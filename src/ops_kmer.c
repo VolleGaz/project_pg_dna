@@ -140,11 +140,12 @@ qkmer_contains(PG_FUNCTION_ARGS)
 {
     QKmer *pattern = (QKmer *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
     Kmer  *value   = (Kmer  *) PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
-
+    int    np;
+    int    nv;
     check_qkmer_consistency_ops(pattern);
 
-    int np = qkmer_length_internal(pattern);
-    int nv = value->length;
+    np = qkmer_length_internal(pattern);
+    nv = value->length;
 
     if (np != nv)
         ereport(ERROR,
@@ -204,4 +205,3 @@ kmer_cmp(PG_FUNCTION_ARGS)
 
     PG_RETURN_INT32(0);
 }
-

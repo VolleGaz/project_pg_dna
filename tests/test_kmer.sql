@@ -11,6 +11,12 @@ SELECT '--- Length ---' AS section;
 SELECT length('AC'::kmer);
 SELECT length('ACGTACGTACGTACGTACGTACGTACGTACGT'::kmer);
 
+SELECT '--- Aliases ---' AS section;
+SELECT equals('ACGT'::kmer, 'ACGT'::kmer);
+SELECT equals('ACGT'::kmer, 'TGCA'::kmer);
+SELECT starts_with('AC'::kmer, 'ACGT'::kmer);  -- prefix first
+SELECT starts_with('GT'::kmer, 'ACGT'::kmer);
+
 SELECT '--- Errors ---' AS section;
 
 DO $$

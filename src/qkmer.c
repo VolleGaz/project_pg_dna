@@ -79,14 +79,17 @@ qkmer_length_internal(const QKmer *q)
 static void
 check_qkmer_consistency(const QKmer *q)
 {
-    int n = qkmer_length_internal(q);
+    int n;
+    Size expected;
+
+    n = qkmer_length_internal(q);
 
     if (n < 0 || n > QKMER_MAX_LENGTH)
         ereport(ERROR,
                 (errcode(ERRCODE_DATA_CORRUPTED),
                  errmsg("qkmer value has unreasonable length")));
 
-    Size expected = offsetof(QKmer, data) + n;
+    expected = offsetof(QKmer, data) + n;
     if (VARSIZE_ANY(q) != expected)
         ereport(ERROR,
                 (errcode(ERRCODE_DATA_CORRUPTED),
@@ -100,8 +103,13 @@ PG_FUNCTION_INFO_V1(qkmer_in);
 
 Datum qkmer_in(PG_FUNCTION_ARGS)
 {
-    char *input = PG_GETARG_CSTRING(0);
-    int n = (int)strlen(input);
+    char *input;
+    int n;
+    Size size;
+    QKmer *q;
+
+    input = PG_GETARG_CSTRING(0);
+    n = (int)strlen(input);
 
     if (n == 0)
         ereport(ERROR,
@@ -113,14 +121,14 @@ Datum qkmer_in(PG_FUNCTION_ARGS)
                 (errcode(ERRCODE_PROGRAM_LIMIT_EXCEEDED),
                  errmsg("qkmer length %d exceeds maximum %d", n, QKMER_MAX_LENGTH)));
 
-    Size size = offsetof(QKmer, data) + n;
+    size = offsetof(QKmer, data) + n;
 
     if (size > MaxAllocSize)
         ereport(ERROR,
                 (errcode(ERRCODE_PROGRAM_LIMIT_EXCEEDED),
                  errmsg("qkmer is too large")));
 
-    QKmer *q = (QKmer *)palloc(size);
+    q = (QKmer *)palloc(size);
     SET_VARSIZE(q, size);
 
     for (int i = 0; i < n; i++)
@@ -136,13 +144,17 @@ PG_FUNCTION_INFO_V1(qkmer_out);
 
 Datum qkmer_out(PG_FUNCTION_ARGS)
 {
-    QKmer *q = (QKmer *)PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+    QKmer *q;
+    int n;
+    char *res;
+
+    q = (QKmer *)PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
 
     check_qkmer_consistency(q);
 
-    int n = qkmer_length_internal(q);
+    n = qkmer_length_internal(q);
 
-    char *res = (char *)palloc(n + 1);
+    res = (char *)palloc(n + 1);
     memcpy(res, q->data, n);
     res[n] = '\0';
 
@@ -154,11 +166,14 @@ PG_FUNCTION_INFO_V1(qkmer_length);
 
 Datum qkmer_length(PG_FUNCTION_ARGS)
 {
-    QKmer *q = (QKmer *)PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+    QKmer *q;
+    int n;
+
+    q = (QKmer *)PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
 
     check_qkmer_consistency(q);
 
-    int n = qkmer_length_internal(q);
+    n = qkmer_length_internal(q);
 
     PG_RETURN_INT32(n);
 }

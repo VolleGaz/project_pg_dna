@@ -23,10 +23,17 @@
      32
 (1 row)
 
-psql:test_qkmer.sql:10: ERROR:  qkmer cannot be empty
+--- Contains alias ---
+ t
+(1 row)
+
+ f
+(1 row)
+
+psql:test_qkmer.sql:25: ERROR:  qkmer cannot be empty
 LINE 1: SELECT ''::qkmer;
                ^
-psql:test_qkmer.sql:11: ERROR:  invalid qkmer base: 'Z' (allowed: A,C,G,T,N,R,Y,S,W,K,M,B,D,H,V)
+psql:test_qkmer.sql:36: ERROR:  invalid qkmer base: 'Z' (allowed: A,C,G,T,N,R,Y,S,W,K,M,B,D,H,V)
 LINE 1: SELECT 'Z'::qkmer;
                ^
-psql:test_qkmer.sql:12: ERROR:  qkmer length 33 exceeds maximum 32
+psql:test_qkmer.sql:47: ERROR:  qkmer length 33 exceeds maximum 32

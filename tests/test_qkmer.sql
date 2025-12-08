@@ -13,6 +13,10 @@ SELECT length('AC'::qkmer);
 SELECT length('NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN'::qkmer);
 -- 32
 
+SELECT '--- Contains alias ---' AS section;
+SELECT contains('AN'::qkmer, 'AC'::kmer);
+SELECT contains('AN'::qkmer, 'GT'::kmer);
+
 SELECT '--- Errors ---' AS section;
 
 DO $$
