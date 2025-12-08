@@ -129,4 +129,4 @@ psql:tests/test_spgist_big.sql:108: WARNING:  inner_consistent called: level=7, 
 RESET
 RESET
 RESET
--- fin du gros test spgist
+-- fin du test spgist
