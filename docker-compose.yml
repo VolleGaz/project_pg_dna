@@ -8,7 +8,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5440:5432"      # Host port 5440 → Container port 5432
+      - "5440:5432"      # Host port 5440; Container port 5432
     volumes:
       - ./data:/var/lib/postgresql/data
       - .:/pg_dna   # Mount your extension code directly
