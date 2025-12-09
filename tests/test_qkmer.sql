@@ -18,7 +18,6 @@ SELECT contains('AN'::qkmer, 'AC'::kmer);
 SELECT contains('AN'::qkmer, 'GT'::kmer);
 
 SELECT '--- Operator literal casting ---' AS section;
--- should resolve unknown literals via assignment casts
 SELECT 'ANGTA' @> 'ATGTA'::kmer;
 SELECT 'ANGTA' @> 'ACGTA'::kmer;
 

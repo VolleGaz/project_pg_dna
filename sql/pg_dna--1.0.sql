@@ -14,7 +14,6 @@ CREATE TYPE dna (
     INTERNALLENGTH = VARIABLE,
     STORAGE = EXTENDED
 );
--- Allow implicit/assignment casts from text literals
 --  Utility: length of a DNA sequence
 CREATE FUNCTION dna_length(dna) RETURNS integer AS 'pg_dna',
 'dna_length' LANGUAGE C IMMUTABLE STRICT;
@@ -40,7 +39,6 @@ CREATE TYPE kmer (
     INTERNALLENGTH = VARIABLE,
     STORAGE = EXTENDED
 );
--- Allow implicit/assignment casts from text literals
 --  length(kmer)
 CREATE FUNCTION kmer_length(kmer) RETURNS integer AS 'pg_dna',
 'kmer_length' LANGUAGE C IMMUTABLE STRICT;
@@ -60,7 +58,6 @@ CREATE TYPE qkmer (
     INTERNALLENGTH = VARIABLE,
     STORAGE = EXTENDED
 );
--- Allow implicit/assignment casts from text literals
 -- length(qkmer)
 CREATE FUNCTION qkmer_length(qkmer) RETURNS integer AS 'pg_dna',
 'qkmer_length' LANGUAGE C IMMUTABLE STRICT;
